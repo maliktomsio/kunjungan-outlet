@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Sales Order Pro</title>
+<title>Sales Order Pro – Rute</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -78,6 +78,12 @@ margin-top:15px;
 text-align:center;
 font-size:18px;
 }
+
+.visited{
+background:#dcfce7;
+color:#065f46;
+font-weight:600;
+}
 </style>
 </head>
 
@@ -101,40 +107,7 @@ font-size:18px;
 <div class="card">
 <input type="date" id="tgl">
 
-<select id="outlet">
-<option value="">Pilih Outlet</option>
-<option>A088 – AMELIA BAKEKO</option>
-<option>A095 – AMOR KIOS</option>
-<option>A120 – AGORA TIMUR NUSANTARA</option>
-<option>A124 – AZIZAH KIOS</option>
-<option>A129 – APRI KIOS SEBRANG</option>
-<option>D029 – DILA KIOS</option>
-<option>D044 – DILLA KIOS PASIR PANJANG</option>
-<option>E004 – EMMI TAN BU</option>
-<option>H040 – HENDRO KOLAM AIR BESAR</option>
-<option>I042 – IBU HASNI NASKUN</option>
-<option>J012 – JOKO MAS</option>
-<option>K018 – KODAR MAS</option>
-<option>K055 – KIOS IRMA</option>
-<option>M085 – MAULANA KIOS</option>
-<option>N003 – NANDO</option>
-<option>P032 – PUTRA SOLO</option>
-<option>R038 – RS MISI SEBRANG</option>
-<option>S050 – SUMBER REJEKI PASIR PANJANG</option>
-<option>S076 – SINAR MERAPI</option>
-<option>S091 – SINAR MUDA KIOS (EBA)</option>
-<option>S092 – KANTIN SMAN 2 (SLAMET)</option>
-<option>S111 – SABYAN KIOS</option>
-<option>S160 – SIMPANG TIGA KIOS</option>
-<option>T002 – ANTO KIOS</option>
-<option>Y014 – YULI BAKEKO</option>
-<option>F002 – FADJRIN</option>
-<option>R024 – ROMAIKA KIOS</option>
-<option>S037 – SOKIMIN SEBRANG</option>
-<option>D010 – DICKY SEBRANG</option>
-<option>A111 – ALKA KIOS</option>
-<option>B064 – BEACHES CAFE</option>
-</select>
+<select id="outlet"></select>
 
 <input id="produk" placeholder="Nama Produk">
 <input id="qty" type="number" placeholder="Qty">
@@ -155,23 +128,59 @@ font-size:18px;
 </div>
 
 <script>
-let orders = JSON.parse(localStorage.getItem("orders"))||[];
+const outletList = [
+"A088 – AMELIA BAKEKO","A095 – AMOR KIOS","A120 – AGORA TIMUR NUSANTARA",
+"A124 – AZIZAH KIOS","A129 – APRI KIOS SEBRANG","D029 – DILA KIOS",
+"D044 – DILLA KIOS PASIR PANJANG","E004 – EMMI TAN BU",
+"H040 – HENDRO KOLAM AIR BESAR","I042 – IBU HASNI NASKUN",
+"J012 – JOKO MAS","K018 – KODAR MAS","K055 – KIOS IRMA",
+"M085 – MAULANA KIOS","N003 – NANDO","P032 – PUTRA SOLO",
+"R038 – RS MISI SEBRANG","S050 – SUMBER REJEKI PASIR PANJANG",
+"S076 – SINAR MERAPI","S091 – SINAR MUDA KIOS (EBA)",
+"S092 – KANTIN SMAN 2 (SLAMET)","S111 – SABYAN KIOS",
+"S160 – SIMPANG TIGA KIOS","T002 – ANTO KIOS","Y014 – YULI BAKEKO",
+"F002 – FADJRIN","R024 – ROMAIKA KIOS","S037 – SOKIMIN SEBRANG",
+"D010 – DICKY SEBRANG","A111 – ALKA KIOS","B064 – BEACHES CAFE"
+];
+
+let orders = JSON.parse(localStorage.getItem("orders")) || [];
 let salesName = localStorage.getItem("sales");
 
 if(salesName){
-document.getElementById("login").classList.add("hidden");
-document.getElementById("app").classList.remove("hidden");
+login.classList.add("hidden");
+app.classList.remove("hidden");
 document.getElementById("salesName").innerText="Sales: "+salesName;
 }
 
 function login(){
-const s=document.getElementById("sales").value;
+const s=sales.value.trim();
 if(!s) return alert("Isi nama sales");
 localStorage.setItem("sales",s);
 location.reload();
 }
 
+function loadOutlet(){
+const t=tgl.value;
+outlet.innerHTML='<option value="">Pilih Outlet</option>';
+
+outletList.forEach(o=>{
+const opt=document.createElement("option");
+opt.value=o;
+opt.textContent=o;
+
+const sudah=orders.some(x=>x.tgl===t && x.outlet===o);
+
+if(sudah){
+opt.textContent+=" ✓ SUDAH DIKUNJUNGI";
+opt.classList.add("visited");
+}
+outlet.appendChild(opt);
+});
+}
+
 function tambah(){
+if(!tgl.value || !outlet.value) return alert("Lengkapi data");
+
 const o={
 tgl:tgl.value,
 outlet:outlet.value,
@@ -180,15 +189,18 @@ qty:+qty.value,
 harga:+harga.value
 };
 o.total=o.qty*o.harga;
+
 orders.push(o);
 localStorage.setItem("orders",JSON.stringify(orders));
-render();
+
 produk.value="";qty.value="";harga.value="";
+loadOutlet();
+render();
 }
 
 function render(){
 let html=`<tr>
-<th>Tgl</th><th>Outlet</th><th>Produk</th>
+<th>Tanggal</th><th>Outlet</th><th>Produk</th>
 <th>Qty</th><th>Total</th><th></th></tr>`;
 let total=0;
 
@@ -203,15 +215,17 @@ html+=`<tr>
 </tr>`;
 total+=o.total;
 });
+
 tbl.innerHTML=html;
-totalHari.innerText="TOTAL SEMUA: "+total;
+totalHari.innerText="TOTAL SEMUA : Rp "+total.toLocaleString("id-ID");
 }
 
 function del(i){
-if(confirm("Hapus data?")){
+if(confirm("Hapus order ini?")){
 orders.splice(i,1);
 localStorage.setItem("orders",JSON.stringify(orders));
 render();
+loadOutlet();
 }
 }
 
@@ -222,7 +236,7 @@ csv+=`${o.tgl},${o.outlet},${o.produk},${o.qty},${o.harga},${o.total}\n`;
 });
 let a=document.createElement("a");
 a.href=URL.createObjectURL(new Blob([csv]));
-a.download="sales-order.csv";
+a.download="laporan-sales.csv";
 a.click();
 }
 
@@ -237,6 +251,8 @@ t+=`TOTAL : ${total}`;
 window.open("https://wa.me/?text="+t);
 }
 
+tgl.addEventListener("change",loadOutlet);
+loadOutlet();
 render();
 </script>
 
