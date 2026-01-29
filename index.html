@@ -2,113 +2,55 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Sales Order Outlet</title>
+<title>Sales Visit Enterprise</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- GOOGLE MAPS -->
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
+
+<!-- EXCEL XLSX -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<!-- CHART -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
-body {
-    font-family: -apple-system, BlinkMacSystemFont, Arial;
-    background: #f4f6f9;
-    margin: 0;
-    padding: 15px;
-}
-
-.header {
-    background: linear-gradient(135deg,#0f2a44,#123f66);
-    color: white;
-    padding: 25px;
-    border-radius: 15px;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.card {
-    background: white;
-    padding: 18px;
-    border-radius: 15px;
-    margin-bottom: 18px;
-    box-shadow: 0 8px 20px rgba(0,0,0,.05);
-}
-
-label {
-    font-weight: 600;
-    margin-top: 10px;
-    display: block;
-}
-
-input, select {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    margin-top: 5px;
-}
-
-button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    margin-top: 15px;
-    cursor: pointer;
-}
-
-.btn-add {
-    background: #2563eb;
-    color: white;
-}
-
-.btn-excel {
-    background: #0f766e;
-    color: white;
-}
-
-.btn-wa {
-    background: #25D366;
-    color: white;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    font-size: 13px;
-}
-
-th, td {
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-}
-
-th {
-    background: #f1f5f9;
-}
-
-.hapus {
-    background: #ef4444;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 8px;
-    font-size: 12px;
-}
+body{margin:0;font-family:-apple-system;background:#f4f6f9}
+.hidden{display:none}
+header{background:linear-gradient(135deg,#0f172a,#1e40af);color:#fff;
+padding:25px;text-align:center;border-radius:0 0 25px 25px}
+.card{background:#fff;margin:15px;padding:18px;border-radius:18px;
+box-shadow:0 10px 25px rgba(0,0,0,.06)}
+input,select,button{width:100%;padding:12px;border-radius:12px;margin-top:8px}
+button{background:#2563eb;color:#fff;border:none;font-size:16px}
+.btn2{background:#059669}
+.btn3{background:#dc2626}
+#map{width:100%;height:280px;border-radius:15px;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{padding:7px;border-bottom:1px solid #eee}
+th{background:#f1f5f9}
 </style>
 </head>
 
 <body>
 
-<div class="header">
-    <h2>📦 SALES ORDER</h2>
-    <div>Rute Sebrang 1</div>
+<div id="login" class="card">
+<h2>🔐 Login Sales</h2>
+<input id="sales" placeholder="Nama sales">
+<button onclick="login()">Masuk</button>
 </div>
 
-<div class="card">
-<label>Tanggal</label>
-<input type="date" id="tanggal">
+<div id="app" class="hidden">
 
-<label>Outlet</label>
+<header>
+<h2>📍 SALES VISIT ENTERPRISE</h2>
+<div id="salesName"></div>
+</header>
+
+<div class="card">
+<input type="date" id="tgl">
 <select id="outlet">
-<option value="">Pilih outlet</option>
+<option value="">Pilih Outlet</option>
 <option>A088 – AMELIA BAKEKO</option>
 <option>A095 – AMOR KIOS</option>
 <option>A120 – AGORA TIMUR NUSANTARA</option>
@@ -142,107 +84,86 @@ th {
 <option>B064 – BEACHES CAFE</option>
 </select>
 
-<label>Produk</label>
-<input id="produk">
+<button onclick="checkIn()">🟢 CHECK-IN</button>
+<button class="btn3" onclick="checkOut()">🔴 CHECK-OUT</button>
 
-<label>Qty</label>
-<input type="number" id="qty">
-
-<label>Harga</label>
-<input type="number" id="harga">
-
-<button class="btn-add" onclick="tambah()">➕ Simpan Order</button>
+<div id="map"></div>
 </div>
 
 <div class="card">
-<button class="btn-excel" onclick="exportExcel()">⬇ Export Excel</button>
-<button class="btn-wa" onclick="kirimWA()">📲 Kirim Laporan WhatsApp</button>
+<button class="btn2" onclick="exportXLSX()">⬇ Export Excel (.xlsx)</button>
+<table id="tbl"></table>
+</div>
 
-<table id="tabel"></table>
 </div>
 
 <script>
-let data = JSON.parse(localStorage.getItem("order")) || [];
+let orders = JSON.parse(localStorage.getItem("visits")) || [];
+let salesName = localStorage.getItem("sales");
+let map, marker, current;
 
-function render() {
-    let html = `
-    <tr>
-    <th>Tgl</th><th>Outlet</th><th>Produk</th>
-    <th>Qty</th><th>Total</th><th></th>
-    </tr>`;
-
-    data.forEach((d,i)=>{
-        html += `
-        <tr>
-            <td>${d.tgl}</td>
-            <td>${d.outlet}</td>
-            <td>${d.produk}</td>
-            <td>${d.qty}</td>
-            <td>${d.total}</td>
-            <td><button class="hapus" onclick="hapus(${i})">Hapus</button></td>
-        </tr>`;
-    });
-
-    document.getElementById("tabel").innerHTML = html;
+if(salesName){
+login.style.display="none";
+app.classList.remove("hidden");
+document.getElementById("salesName").innerText="Sales: "+salesName;
 }
 
-function tambah(){
-    const tgl = tanggal.value;
-    const outlet = document.getElementById("outlet").value;
-    const produk = document.getElementById("produk").value;
-    const qty = Number(document.getElementById("qty").value);
-    const harga = Number(document.getElementById("harga").value);
-
-    if(!tgl || !outlet || !produk) return alert("Lengkapi data");
-
-    data.push({
-        tgl, outlet, produk,
-        qty, harga,
-        total: qty * harga
-    });
-
-    localStorage.setItem("order",JSON.stringify(data));
-    render();
-
-    produk.value="";
-    qty.value="";
-    harga.value="";
+function login(){
+localStorage.setItem("sales",sales.value);
+location.reload();
 }
 
-function hapus(i){
-    if(confirm("Hapus order ini?")){
-        data.splice(i,1);
-        localStorage.setItem("order",JSON.stringify(data));
-        render();
-    }
+function initMap(lat,lng){
+map=new google.maps.Map(document.getElementById("map"),{
+center:{lat,lng},zoom:16
+});
+marker=new google.maps.Marker({position:{lat,lng},map});
 }
 
-function exportExcel(){
-    let csv = "Tanggal,Outlet,Produk,Qty,Harga,Total\n";
-    data.forEach(d=>{
-        csv+=`${d.tgl},${d.outlet},${d.produk},${d.qty},${d.harga},${d.total}\n`;
-    });
-
-    const blob=new Blob([csv],{type:"text/csv"});
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download="laporan-order.csv";
-    a.click();
+function checkIn(){
+navigator.geolocation.getCurrentPosition(pos=>{
+current={
+tgl:tgl.value,
+outlet:outlet.value,
+checkin:new Date().toLocaleTimeString(),
+lat:pos.coords.latitude,
+lng:pos.coords.longitude
+};
+initMap(current.lat,current.lng);
+});
 }
 
-function kirimWA(){
-    let text="*LAPORAN SALES ORDER*%0A%0A";
-    let total=0;
+function checkOut(){
+if(!current) return alert("Belum check-in");
+current.checkout=new Date().toLocaleTimeString();
+current.sales=salesName;
+orders.push(current);
+localStorage.setItem("visits",JSON.stringify(orders));
+render();
+alert("Kunjungan tersimpan");
+}
 
-    data.forEach(d=>{
-        text+=`${d.tgl} - ${d.outlet}%0A`;
-        text+=`${d.produk} x${d.qty} = ${d.total}%0A%0A`;
-        total+=d.total;
-    });
+function render(){
+let html=`<tr>
+<th>Tgl</th><th>Outlet</th><th>Check-in</th>
+<th>Check-out</th><th>Sales</th></tr>`;
+orders.forEach(o=>{
+html+=`<tr>
+<td>${o.tgl}</td>
+<td>${o.outlet}</td>
+<td>${o.checkin}</td>
+<td>${o.checkout}</td>
+<td>${o.sales}</td>
+</tr>`;
+});
+tbl.innerHTML=html;
+}
 
-    text+=`*TOTAL: ${total}*`;
-
-    window.open("https://wa.me/?text="+text);
+function exportXLSX(){
+let ws=XLSX.utils.json_to_sheet(orders);
+let wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,"Kunjungan");
+XLSX.writeFile(wb,"laporan-kunjungan.xlsx");
 }
 
 render();
