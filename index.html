@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Sales Order Pro – Rute</title>
+<title>Sales Order – Rute Kunjungan</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -12,8 +12,6 @@ font-family:-apple-system,BlinkMacSystemFont,Arial;
 margin:0;
 background:#f4f6f9;
 }
-
-.hidden{display:none}
 
 header{
 background:linear-gradient(135deg,#0f172a,#1e3a8a);
@@ -89,19 +87,9 @@ font-weight:600;
 
 <body>
 
-<!-- LOGIN -->
-<div id="login" class="card">
-<h2>🔐 Login Sales</h2>
-<input id="sales" placeholder="Nama Sales">
-<button onclick="login()">Masuk</button>
-</div>
-
-<!-- APP -->
-<div id="app" class="hidden">
-
 <header>
-<h2>📦 SALES ORDER PRO</h2>
-<div id="salesName"></div>
+<h2>📦 SALES ORDER RUTE</h2>
+<div>Monitoring Kunjungan Outlet</div>
 </header>
 
 <div class="card">
@@ -125,8 +113,6 @@ font-weight:600;
 <div class="totalBox" id="totalHari"></div>
 </div>
 
-</div>
-
 <script>
 const outletList = [
 "A088 – AMELIA BAKEKO","A095 – AMOR KIOS","A120 – AGORA TIMUR NUSANTARA",
@@ -144,42 +130,31 @@ const outletList = [
 ];
 
 let orders = JSON.parse(localStorage.getItem("orders")) || [];
-let salesName = localStorage.getItem("sales");
-
-if(salesName){
-login.classList.add("hidden");
-app.classList.remove("hidden");
-document.getElementById("salesName").innerText="Sales: "+salesName;
-}
-
-function login(){
-const s=sales.value.trim();
-if(!s) return alert("Isi nama sales");
-localStorage.setItem("sales",s);
-location.reload();
-}
 
 function loadOutlet(){
-const t=tgl.value;
-outlet.innerHTML='<option value="">Pilih Outlet</option>';
+const t = document.getElementById("tgl").value;
+outlet.innerHTML = '<option value="">Pilih Outlet</option>';
 
 outletList.forEach(o=>{
-const opt=document.createElement("option");
-opt.value=o;
-opt.textContent=o;
+const opt = document.createElement("option");
+opt.value = o;
+opt.textContent = o;
 
-const sudah=orders.some(x=>x.tgl===t && x.outlet===o);
+const sudah = orders.some(x =>
+    x.tgl === t && x.outlet === o
+);
 
 if(sudah){
-opt.textContent+=" ✓ SUDAH DIKUNJUNGI";
-opt.classList.add("visited");
+    opt.textContent += " ✓ SUDAH DIKUNJUNGI";
+    opt.classList.add("visited");
 }
 outlet.appendChild(opt);
 });
 }
 
 function tambah(){
-if(!tgl.value || !outlet.value) return alert("Lengkapi data");
+if(!tgl.value || !outlet.value)
+return alert("Tanggal & outlet wajib diisi");
 
 const o={
 tgl:tgl.value,
@@ -188,42 +163,57 @@ produk:produk.value,
 qty:+qty.value,
 harga:+harga.value
 };
-o.total=o.qty*o.harga;
+
+o.total = o.qty * o.harga;
 
 orders.push(o);
-localStorage.setItem("orders",JSON.stringify(orders));
+localStorage.setItem("orders", JSON.stringify(orders));
 
-produk.value="";qty.value="";harga.value="";
+produk.value="";
+qty.value="";
+harga.value="";
+
 loadOutlet();
 render();
 }
 
 function render(){
-let html=`<tr>
-<th>Tanggal</th><th>Outlet</th><th>Produk</th>
-<th>Qty</th><th>Total</th><th></th></tr>`;
-let total=0;
+let html = `
+<tr>
+<th>Tanggal</th>
+<th>Outlet</th>
+<th>Produk</th>
+<th>Qty</th>
+<th>Total</th>
+<th></th>
+</tr>`;
+
+let total = 0;
 
 orders.forEach((o,i)=>{
-html+=`<tr>
+html += `
+<tr>
 <td>${o.tgl}</td>
 <td>${o.outlet}</td>
 <td>${o.produk}</td>
 <td>${o.qty}</td>
 <td>${o.total}</td>
-<td><button class="btnDel" onclick="del(${i})">X</button></td>
+<td>
+<button class="btnDel" onclick="hapus(${i})">X</button>
+</td>
 </tr>`;
-total+=o.total;
+total += o.total;
 });
 
-tbl.innerHTML=html;
-totalHari.innerText="TOTAL SEMUA : Rp "+total.toLocaleString("id-ID");
+tbl.innerHTML = html;
+totalHari.innerText =
+"TOTAL PENJUALAN : Rp " + total.toLocaleString("id-ID");
 }
 
-function del(i){
+function hapus(i){
 if(confirm("Hapus order ini?")){
 orders.splice(i,1);
-localStorage.setItem("orders",JSON.stringify(orders));
+localStorage.setItem("orders", JSON.stringify(orders));
 render();
 loadOutlet();
 }
@@ -241,17 +231,20 @@ a.click();
 }
 
 function kirimWA(){
-let t="*LAPORAN SALES*%0A";
+let teks="*LAPORAN SALES*%0A%0A";
 let total=0;
+
 orders.forEach(o=>{
-t+=`${o.tgl} - ${o.outlet}%0A${o.produk} x${o.qty} = ${o.total}%0A%0A`;
+teks+=`${o.tgl}%0A${o.outlet}%0A${o.produk} x${o.qty} = ${o.total}%0A%0A`;
 total+=o.total;
 });
-t+=`TOTAL : ${total}`;
-window.open("https://wa.me/?text="+t);
+
+teks+=`TOTAL : ${total}`;
+window.open("https://wa.me/?text="+teks);
 }
 
-tgl.addEventListener("change",loadOutlet);
+tgl.addEventListener("change", loadOutlet);
+
 loadOutlet();
 render();
 </script>
