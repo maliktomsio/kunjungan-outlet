@@ -3,201 +3,199 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Kunjungan Outlet</title>
+<title>Catatan Order Outlet</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f8;
-    margin: 0;
+    font-family: Arial;
+    background: #f2f2f2;
     padding: 15px;
 }
-
 h2 {
     text-align: center;
-    margin-bottom: 5px;
 }
-
-.progress-box {
+.box {
     background: #fff;
-    padding: 12px;
-    border-radius: 8px;
+    padding: 15px;
+    border-radius: 10px;
     margin-bottom: 15px;
-    text-align: center;
-    font-weight: bold;
 }
-
-.progress-bar {
-    height: 12px;
-    background: #ddd;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 8px;
-}
-
-.progress {
-    height: 100%;
-    background: #28a745;
-    width: 0%;
-}
-
-.list {
-    background: #fff;
-    border-radius: 10px;
-    padding: 10px;
-}
-
-.item {
-    border-bottom: 1px solid #eee;
-    padding: 10px 0;
-}
-
-.item:last-child {
-    border-bottom: none;
-}
-
-.row {
-    display: flex;
-    align-items: center;
-}
-
-input[type="checkbox"] {
-    width: 22px;
-    height: 22px;
-    margin-right: 10px;
-}
-
 label {
-    flex: 1;
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
 }
-
-.done {
-    text-decoration: line-through;
-    color: gray;
-}
-
-.date {
+input, select {
+    width: 100%;
+    padding: 10px;
     margin-top: 5px;
 }
-
-.date input {
-    width: 160px;
-    padding: 4px;
+button {
+    margin-top: 15px;
+    padding: 12px;
+    width: 100%;
+    background: #2196f3;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 6px;
+    font-size: 14px;
+}
+th {
+    background: #eee;
 }
 </style>
 </head>
 
 <body>
 
-<h2>📍 Checklist Kunjungan Outlet</h2>
+<h2>📦 Catatan Order Outlet</h2>
 
-<div class="progress-box">
-    <div id="counter">0 / 0 outlet dikunjungi</div>
-    <div class="progress-bar">
-        <div class="progress" id="progress"></div>
-    </div>
+<div class="box">
+
+<label>Tanggal</label>
+<input type="date" id="tanggal">
+
+<label>Outlet</label>
+<select id="outlet">
+<option value="">-- pilih outlet --</option>
+<option>A088 – AMELIA BAKEKO</option>
+<option>A095 – AMOR KIOS</option>
+<option>A120 – AGORA TIMUR NUSANTARA</option>
+<option>A124 – AZIZAH KIOS</option>
+<option>A129 – APRI KIOS SEBRANG</option>
+<option>D029 – DILA KIOS</option>
+<option>D044 – DILLA KIOS PASIR PANJANG</option>
+<option>E004 – EMMI TAN BU</option>
+<option>H040 – HENDRO KOLAM AIR BESAR</option>
+<option>I042 – IBU HASNI NASKUN</option>
+<option>J012 – JOKO MAS</option>
+<option>K018 – KODAR MAS</option>
+<option>K055 – KIOS IRMA</option>
+<option>M085 – MAULANA KIOS</option>
+<option>N003 – NANDO</option>
+<option>P032 – PUTRA SOLO</option>
+<option>R038 – RS MISI SEBRANG</option>
+<option>S050 – SUMBER REJEKI PASIR PANJANG</option>
+<option>S076 – SINAR MERAPI</option>
+<option>S091 – SINAR MUDA KIOS (EBA)</option>
+<option>S092 – KANTIN SMAN 2 (SLAMET)</option>
+<option>S111 – SABYAN KIOS</option>
+<option>S160 – SIMPANG TIGA KIOS</option>
+<option>T002 – ANTO KIOS</option>
+<option>Y014 – YULI BAKEKO</option>
+<option>F002 – FADJRIN</option>
+<option>R024 – ROMAIKA KIOS</option>
+<option>S037 – SOKIMIN SEBRANG</option>
+<option>D010 – DICKY SEBRANG</option>
+<option>A111 – ALKA KIOS</option>
+<option>B064 – BEACHES CAFE</option>
+</select>
+
+<label>Nama Produk</label>
+<input type="text" id="produk">
+
+<label>Jumlah</label>
+<input type="number" id="qty">
+
+<label>Harga Satuan</label>
+<input type="number" id="harga">
+
+<button onclick="tambah()">➕ Simpan Order</button>
+
 </div>
 
-<div class="list" id="list"></div>
+<div class="box">
+<button onclick="exportExcel()">⬇ Export ke Excel</button>
+
+<table id="tabel">
+<tr>
+<th>Tanggal</th>
+<th>Outlet</th>
+<th>Produk</th>
+<th>Qty</th>
+<th>Harga</th>
+<th>Total</th>
+</tr>
+</table>
+</div>
 
 <script>
-const outlets = [
-"A088 – AMELIA BAKEKO",
-"A095 – AMOR KIOS",
-"A120 – AGORA TIMUR NUSANTARA",
-"A124 – AZIZAH KIOS",
-"A129 – APRI KIOS SEBRANG",
-"D029 – DILA KIOS",
-"D044 – DILLA KIOS PASIR PANJANG",
-"E004 – EMMI TAN BU",
-"H040 – HENDRO KOLAM AIR BESAR",
-"I042 – IBU HASNI NASKUN",
-"J012 – JOKO MAS",
-"K018 – KODAR MAS",
-"K055 – KIOS IRMA",
-"M085 – MAULANA KIOS",
-"N003 – NANDO",
-"P032 – PUTRA SOLO",
-"R038 – RS MISI SEBRANG",
-"S050 – SUMBER REJEKI PASIR PANJANG",
-"S076 – SINAR MERAPI",
-"S091 – SINAR MUDA KIOS (EBA)",
-"S092 – KANTIN SMAN 2 (SLAMET)",
-"S111 – SABYAN KIOS",
-"S160 – SIMPANG TIGA KIOS",
-"T002 – ANTO KIOS",
-"Y014 – YULI BAKEKO",
-"F002 – FADJRIN",
-"R024 – ROMAIKA KIOS",
-"S037 – SOKIMIN SEBRANG",
-"D010 – DICKY SEBRANG",
-"A111 – ALKA KIOS",
-"B064 – BEACHES CAFE"
-];
+let data = JSON.parse(localStorage.getItem("order")) || [];
 
-const list = document.getElementById("list");
-const counter = document.getElementById("counter");
-const progress = document.getElementById("progress");
-
-function updateProgress() {
-    const checked = document.querySelectorAll("input[type=checkbox]:checked").length;
-    const total = outlets.length;
-    counter.textContent = `${checked} / ${total} outlet dikunjungi`;
-    progress.style.width = (checked / total * 100) + "%";
+function render() {
+    const tabel = document.getElementById("tabel");
+    tabel.innerHTML = `
+    <tr>
+        <th>Tanggal</th>
+        <th>Outlet</th>
+        <th>Produk</th>
+        <th>Qty</th>
+        <th>Harga</th>
+        <th>Total</th>
+    </tr>`;
+    data.forEach(d => {
+        tabel.innerHTML += `
+        <tr>
+            <td>${d.tanggal}</td>
+            <td>${d.outlet}</td>
+            <td>${d.produk}</td>
+            <td>${d.qty}</td>
+            <td>${d.harga}</td>
+            <td>${d.total}</td>
+        </tr>`;
+    });
 }
 
-outlets.forEach((nama, i) => {
-    const saved = JSON.parse(localStorage.getItem("outlet_" + i)) || {};
+function tambah() {
+    const tgl = tanggal.value;
+    const outlet = document.getElementById("outlet").value;
+    const produk = document.getElementById("produk").value;
+    const qty = Number(document.getElementById("qty").value);
+    const harga = Number(document.getElementById("harga").value);
 
-    const item = document.createElement("div");
-    item.className = "item";
-
-    const row = document.createElement("div");
-    row.className = "row";
-
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = saved.checked || false;
-
-    const label = document.createElement("label");
-    label.textContent = nama;
-
-    if (cb.checked) label.classList.add("done");
-
-    cb.addEventListener("change", () => {
-        label.classList.toggle("done");
-        save();
-        updateProgress();
-    });
-
-    row.appendChild(cb);
-    row.appendChild(label);
-
-    const dateDiv = document.createElement("div");
-    dateDiv.className = "date";
-
-    const date = document.createElement("input");
-    date.type = "date";
-    date.value = saved.date || "";
-
-    date.addEventListener("change", save);
-
-    function save() {
-        localStorage.setItem("outlet_" + i, JSON.stringify({
-            checked: cb.checked,
-            date: date.value
-        }));
+    if (!tgl || !outlet || !produk) {
+        alert("Lengkapi data");
+        return;
     }
 
-    dateDiv.append("Tanggal kunjungan: ", date);
+    const total = qty * harga;
 
-    item.appendChild(row);
-    item.appendChild(dateDiv);
-    list.appendChild(item);
-});
+    data.push({ tanggal: tgl, outlet, produk, qty, harga, total });
+    localStorage.setItem("order", JSON.stringify(data));
+    render();
 
-updateProgress();
+    produk.value = "";
+    qty.value = "";
+    harga.value = "";
+}
+
+function exportExcel() {
+    let csv = "Tanggal,Outlet,Produk,Qty,Harga,Total\n";
+    data.forEach(d => {
+        csv += `${d.tanggal},${d.outlet},${d.produk},${d.qty},${d.harga},${d.total}\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "order-outlet.csv";
+    a.click();
+}
+
+render();
 </script>
 
 </body>
