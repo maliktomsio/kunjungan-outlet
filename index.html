@@ -50,6 +50,7 @@ background:#2563eb;
 }
 
 .btn2{background:#059669}
+.btnEnd{background:#dc2626}
 .btn3{background:#25D366}
 .btnDel{background:#ef4444;padding:6px 10px;font-size:12px}
 
@@ -77,6 +78,25 @@ text-align:center;
 font-size:18px;
 }
 
+.progressBox{
+margin-top:15px;
+}
+
+.bar{
+height:16px;
+background:#e5e7eb;
+border-radius:10px;
+overflow:hidden;
+margin-top:6px;
+}
+
+.bar span{
+display:block;
+height:100%;
+background:#22c55e;
+width:0%;
+}
+
 .visited{
 background:#dcfce7;
 color:#065f46;
@@ -95,6 +115,17 @@ font-weight:600;
 <div class="card">
 <input type="date" id="tgl">
 
+<button class="btn2" onclick="mulaiHari()">▶ Mulai Hari</button>
+<button class="btnEnd" onclick="akhiriHari()">⛔ Akhiri Hari</button>
+
+<div class="progressBox">
+<b>📍 Progress Rute</b>
+<div id="progressText">0 / 0 outlet</div>
+<div class="bar"><span id="bar"></span></div>
+</div>
+</div>
+
+<div class="card">
 <select id="outlet"></select>
 
 <input id="produk" placeholder="Nama Produk">
@@ -130,93 +161,117 @@ const outletList = [
 ];
 
 let orders = JSON.parse(localStorage.getItem("orders")) || [];
+let activeDate = localStorage.getItem("activeDate");
+
+function mulaiHari(){
+if(!tgl.value) return alert("Pilih tanggal dulu");
+activeDate = tgl.value;
+localStorage.setItem("activeDate", activeDate);
+alert("Hari dimulai ✅");
+loadOutlet();
+render();
+}
+
+function akhiriHari(){
+if(!activeDate) return alert("Belum mulai hari");
+
+if(confirm("Akhiri hari dan reset kunjungan?")){
+orders = orders.filter(o => o.tgl !== activeDate);
+localStorage.setItem("orders", JSON.stringify(orders));
+localStorage.removeItem("activeDate");
+activeDate = null;
+render();
+loadOutlet();
+alert("Hari selesai. Data reset ✅");
+}
+}
 
 function loadOutlet(){
-const t = document.getElementById("tgl").value;
-outlet.innerHTML = '<option value="">Pilih Outlet</option>';
+outlet.innerHTML='<option value="">Pilih Outlet</option>';
 
 outletList.forEach(o=>{
-const opt = document.createElement("option");
-opt.value = o;
-opt.textContent = o;
+const opt=document.createElement("option");
+opt.value=o;
+opt.textContent=o;
 
-const sudah = orders.some(x =>
-    x.tgl === t && x.outlet === o
+const sudah=orders.some(x =>
+x.tgl===activeDate && x.outlet===o
 );
 
 if(sudah){
-    opt.textContent += " ✓ SUDAH DIKUNJUNGI";
-    opt.classList.add("visited");
+opt.textContent+=" ✓";
+opt.classList.add("visited");
 }
 outlet.appendChild(opt);
 });
+
+updateProgress();
 }
 
 function tambah(){
-if(!tgl.value || !outlet.value)
-return alert("Tanggal & outlet wajib diisi");
+if(!activeDate) return alert("Klik MULAI HARI dulu");
+if(!outlet.value) return alert("Pilih outlet");
 
 const o={
-tgl:tgl.value,
+tgl:activeDate,
 outlet:outlet.value,
 produk:produk.value,
 qty:+qty.value,
 harga:+harga.value
 };
 
-o.total = o.qty * o.harga;
-
+o.total=o.qty*o.harga;
 orders.push(o);
-localStorage.setItem("orders", JSON.stringify(orders));
 
-produk.value="";
-qty.value="";
-harga.value="";
+localStorage.setItem("orders",JSON.stringify(orders));
 
+produk.value="";qty.value="";harga.value="";
 loadOutlet();
 render();
 }
 
 function render(){
-let html = `
-<tr>
-<th>Tanggal</th>
-<th>Outlet</th>
-<th>Produk</th>
-<th>Qty</th>
-<th>Total</th>
-<th></th>
-</tr>`;
+let html=`<tr>
+<th>Outlet</th><th>Produk</th>
+<th>Qty</th><th>Total</th><th></th></tr>`;
 
-let total = 0;
+let total=0;
 
-orders.forEach((o,i)=>{
-html += `
+orders.filter(o=>o.tgl===activeDate).forEach((o,i)=>{
+html+=`
 <tr>
-<td>${o.tgl}</td>
 <td>${o.outlet}</td>
 <td>${o.produk}</td>
 <td>${o.qty}</td>
 <td>${o.total}</td>
-<td>
-<button class="btnDel" onclick="hapus(${i})">X</button>
-</td>
+<td><button class="btnDel" onclick="hapus(${i})">X</button></td>
 </tr>`;
-total += o.total;
+total+=o.total;
 });
 
-tbl.innerHTML = html;
-totalHari.innerText =
-"TOTAL PENJUALAN : Rp " + total.toLocaleString("id-ID");
+tbl.innerHTML=html;
+totalHari.innerText="TOTAL HARI INI : Rp "+total.toLocaleString("id-ID");
+
+updateProgress();
 }
 
 function hapus(i){
-if(confirm("Hapus order ini?")){
 orders.splice(i,1);
-localStorage.setItem("orders", JSON.stringify(orders));
+localStorage.setItem("orders",JSON.stringify(orders));
 render();
 loadOutlet();
 }
+
+function updateProgress(){
+const dikunjungi=new Set(
+orders.filter(o=>o.tgl===activeDate).map(o=>o.outlet)
+).size;
+
+const totalOutlet=outletList.length;
+const persen=(dikunjungi/totalOutlet)*100;
+
+progressText.innerText=`${dikunjungi} / ${totalOutlet} outlet`;
+bar.style.width=persen+"%";
 }
 
 function exportExcel(){
@@ -231,22 +286,21 @@ a.click();
 }
 
 function kirimWA(){
-let teks="*LAPORAN SALES*%0A%0A";
+let t="*LAPORAN SALES*%0A%0A";
 let total=0;
-
-orders.forEach(o=>{
-teks+=`${o.tgl}%0A${o.outlet}%0A${o.produk} x${o.qty} = ${o.total}%0A%0A`;
+orders.filter(o=>o.tgl===activeDate).forEach(o=>{
+t+=`${o.outlet}%0A${o.produk} x${o.qty} = ${o.total}%0A%0A`;
 total+=o.total;
 });
-
-teks+=`TOTAL : ${total}`;
-window.open("https://wa.me/?text="+teks);
+t+=`TOTAL : ${total}`;
+window.open("https://wa.me/?text="+t);
 }
 
-tgl.addEventListener("change", loadOutlet);
-
+if(activeDate){
+tgl.value=activeDate;
 loadOutlet();
 render();
+}
 </script>
 
 </body>
