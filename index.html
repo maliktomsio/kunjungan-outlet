@@ -1,74 +1,114 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Catatan Order Outlet</title>
+<title>Sales Order Outlet</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body {
-    font-family: Arial;
-    background: #f2f2f2;
+    font-family: -apple-system, BlinkMacSystemFont, Arial;
+    background: #f4f6f9;
+    margin: 0;
     padding: 15px;
 }
-h2 {
+
+.header {
+    background: linear-gradient(135deg,#0f2a44,#123f66);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
     text-align: center;
+    margin-bottom: 20px;
 }
-.box {
-    background: #fff;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
+
+.card {
+    background: white;
+    padding: 18px;
+    border-radius: 15px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.05);
 }
+
 label {
-    font-weight: bold;
-    display: block;
+    font-weight: 600;
     margin-top: 10px;
+    display: block;
 }
+
 input, select {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
     margin-top: 5px;
 }
+
 button {
-    margin-top: 15px;
-    padding: 12px;
     width: 100%;
-    background: #2196f3;
-    color: #fff;
+    padding: 14px;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 16px;
+    margin-top: 15px;
+    cursor: pointer;
 }
+
+.btn-add {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-excel {
+    background: #0f766e;
+    color: white;
+}
+
+.btn-wa {
+    background: #25D366;
+    color: white;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
+    font-size: 13px;
 }
+
 th, td {
-    border: 1px solid #ccc;
-    padding: 6px;
-    font-size: 14px;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
 }
+
 th {
-    background: #eee;
+    background: #f1f5f9;
+}
+
+.hapus {
+    background: #ef4444;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>📦 Catatan Order Outlet</h2>
+<div class="header">
+    <h2>📦 SALES ORDER</h2>
+    <div>Rute Sebrang 1</div>
+</div>
 
-<div class="box">
-
+<div class="card">
 <label>Tanggal</label>
 <input type="date" id="tanggal">
 
 <label>Outlet</label>
 <select id="outlet">
-<option value="">-- pilih outlet --</option>
+<option value="">Pilih outlet</option>
 <option>A088 – AMELIA BAKEKO</option>
 <option>A095 – AMOR KIOS</option>
 <option>A120 – AGORA TIMUR NUSANTARA</option>
@@ -102,97 +142,107 @@ th {
 <option>B064 – BEACHES CAFE</option>
 </select>
 
-<label>Nama Produk</label>
-<input type="text" id="produk">
+<label>Produk</label>
+<input id="produk">
 
-<label>Jumlah</label>
+<label>Qty</label>
 <input type="number" id="qty">
 
-<label>Harga Satuan</label>
+<label>Harga</label>
 <input type="number" id="harga">
 
-<button onclick="tambah()">➕ Simpan Order</button>
-
+<button class="btn-add" onclick="tambah()">➕ Simpan Order</button>
 </div>
 
-<div class="box">
-<button onclick="exportExcel()">⬇ Export ke Excel</button>
+<div class="card">
+<button class="btn-excel" onclick="exportExcel()">⬇ Export Excel</button>
+<button class="btn-wa" onclick="kirimWA()">📲 Kirim Laporan WhatsApp</button>
 
-<table id="tabel">
-<tr>
-<th>Tanggal</th>
-<th>Outlet</th>
-<th>Produk</th>
-<th>Qty</th>
-<th>Harga</th>
-<th>Total</th>
-</tr>
-</table>
+<table id="tabel"></table>
 </div>
 
 <script>
 let data = JSON.parse(localStorage.getItem("order")) || [];
 
 function render() {
-    const tabel = document.getElementById("tabel");
-    tabel.innerHTML = `
+    let html = `
     <tr>
-        <th>Tanggal</th>
-        <th>Outlet</th>
-        <th>Produk</th>
-        <th>Qty</th>
-        <th>Harga</th>
-        <th>Total</th>
+    <th>Tgl</th><th>Outlet</th><th>Produk</th>
+    <th>Qty</th><th>Total</th><th></th>
     </tr>`;
-    data.forEach(d => {
-        tabel.innerHTML += `
+
+    data.forEach((d,i)=>{
+        html += `
         <tr>
-            <td>${d.tanggal}</td>
+            <td>${d.tgl}</td>
             <td>${d.outlet}</td>
             <td>${d.produk}</td>
             <td>${d.qty}</td>
-            <td>${d.harga}</td>
             <td>${d.total}</td>
+            <td><button class="hapus" onclick="hapus(${i})">Hapus</button></td>
         </tr>`;
     });
+
+    document.getElementById("tabel").innerHTML = html;
 }
 
-function tambah() {
+function tambah(){
     const tgl = tanggal.value;
     const outlet = document.getElementById("outlet").value;
     const produk = document.getElementById("produk").value;
     const qty = Number(document.getElementById("qty").value);
     const harga = Number(document.getElementById("harga").value);
 
-    if (!tgl || !outlet || !produk) {
-        alert("Lengkapi data");
-        return;
-    }
+    if(!tgl || !outlet || !produk) return alert("Lengkapi data");
 
-    const total = qty * harga;
-
-    data.push({ tanggal: tgl, outlet, produk, qty, harga, total });
-    localStorage.setItem("order", JSON.stringify(data));
-    render();
-
-    produk.value = "";
-    qty.value = "";
-    harga.value = "";
-}
-
-function exportExcel() {
-    let csv = "Tanggal,Outlet,Produk,Qty,Harga,Total\n";
-    data.forEach(d => {
-        csv += `${d.tanggal},${d.outlet},${d.produk},${d.qty},${d.harga},${d.total}\n`;
+    data.push({
+        tgl, outlet, produk,
+        qty, harga,
+        total: qty * harga
     });
 
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
+    localStorage.setItem("order",JSON.stringify(data));
+    render();
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "order-outlet.csv";
+    produk.value="";
+    qty.value="";
+    harga.value="";
+}
+
+function hapus(i){
+    if(confirm("Hapus order ini?")){
+        data.splice(i,1);
+        localStorage.setItem("order",JSON.stringify(data));
+        render();
+    }
+}
+
+function exportExcel(){
+    let csv = "Tanggal,Outlet,Produk,Qty,Harga,Total\n";
+    data.forEach(d=>{
+        csv+=`${d.tgl},${d.outlet},${d.produk},${d.qty},${d.harga},${d.total}\n`;
+    });
+
+    const blob=new Blob([csv],{type:"text/csv"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="laporan-order.csv";
     a.click();
+}
+
+function kirimWA(){
+    let text="*LAPORAN SALES ORDER*%0A%0A";
+    let total=0;
+
+    data.forEach(d=>{
+        text+=`${d.tgl} - ${d.outlet}%0A`;
+        text+=`${d.produk} x${d.qty} = ${d.total}%0A%0A`;
+        total+=d.total;
+    });
+
+    text+=`*TOTAL: ${total}*`;
+
+    window.open("https://wa.me/?text="+text);
 }
 
 render();
