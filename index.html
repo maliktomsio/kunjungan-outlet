@@ -2,165 +2,239 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Sales Visit Enterprise</title>
+<title>Sales Visit System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- EXCEL XLSX -->
+<!-- XLSX EXPORT -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-<!-- CHART -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
-body{margin:0;font-family:-apple-system;background:#f4f6f9}
+body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,Arial;
+    background:#f4f6f9;
+}
 .hidden{display:none}
-header{background:linear-gradient(135deg,#0f172a,#1e40af);color:#fff;
-padding:25px;text-align:center;border-radius:0 0 25px 25px}
-.card{background:#fff;margin:15px;padding:18px;border-radius:18px;
-box-shadow:0 10px 25px rgba(0,0,0,.06)}
-input,select,button{width:100%;padding:12px;border-radius:12px;margin-top:8px}
-button{background:#2563eb;color:#fff;border:none;font-size:16px}
-.btn2{background:#059669}
-.btn3{background:#dc2626}
-#map{width:100%;height:280px;border-radius:15px;margin-top:10px}
-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
-th,td{padding:7px;border-bottom:1px solid #eee}
-th{background:#f1f5f9}
+
+header{
+    background:linear-gradient(135deg,#0f172a,#1e40af);
+    color:#fff;
+    padding:25px;
+    text-align:center;
+    border-radius:0 0 25px 25px;
+}
+
+.card{
+    background:#fff;
+    margin:15px;
+    padding:18px;
+    border-radius:18px;
+    box-shadow:0 10px 25px rgba(0,0,0,.06);
+}
+
+input,select,button{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    margin-top:8px;
+    border:1px solid #ddd;
+    font-size:15px;
+}
+
+button{
+    background:#2563eb;
+    color:#fff;
+    border:none;
+}
+
+.btn-red{background:#dc2626}
+.btn-green{background:#059669}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+    font-size:13px;
+}
+
+th,td{
+    padding:8px;
+    border-bottom:1px solid #eee;
+}
+
+th{
+    background:#f1f5f9;
+}
 </style>
 </head>
 
 <body>
 
-<div id="login" class="card">
-<h2>🔐 Login Sales</h2>
-<input id="sales" placeholder="Nama sales">
-<button onclick="login()">Masuk</button>
+<!-- LOGIN -->
+<div id="loginBox" class="card">
+    <h2>🔐 Login Sales</h2>
+    <input id="salesInput" placeholder="Nama Sales">
+    <button onclick="login()">Masuk</button>
 </div>
 
+<!-- APP -->
 <div id="app" class="hidden">
 
 <header>
-<h2>📍 SALES VISIT ENTERPRISE</h2>
-<div id="salesName"></div>
+    <h2>📍 SALES VISIT</h2>
+    <div id="salesName"></div>
 </header>
 
 <div class="card">
-<input type="date" id="tgl">
-<select id="outlet">
-<option value="">Pilih Outlet</option>
-<option>A088 – AMELIA BAKEKO</option>
-<option>A095 – AMOR KIOS</option>
-<option>A120 – AGORA TIMUR NUSANTARA</option>
-<option>A124 – AZIZAH KIOS</option>
-<option>A129 – APRI KIOS SEBRANG</option>
-<option>D029 – DILA KIOS</option>
-<option>D044 – DILLA KIOS PASIR PANJANG</option>
-<option>E004 – EMMI TAN BU</option>
-<option>H040 – HENDRO KOLAM AIR BESAR</option>
-<option>I042 – IBU HASNI NASKUN</option>
-<option>J012 – JOKO MAS</option>
-<option>K018 – KODAR MAS</option>
-<option>K055 – KIOS IRMA</option>
-<option>M085 – MAULANA KIOS</option>
-<option>N003 – NANDO</option>
-<option>P032 – PUTRA SOLO</option>
-<option>R038 – RS MISI SEBRANG</option>
-<option>S050 – SUMBER REJEKI PASIR PANJANG</option>
-<option>S076 – SINAR MERAPI</option>
-<option>S091 – SINAR MUDA KIOS (EBA)</option>
-<option>S092 – KANTIN SMAN 2 (SLAMET)</option>
-<option>S111 – SABYAN KIOS</option>
-<option>S160 – SIMPANG TIGA KIOS</option>
-<option>T002 – ANTO KIOS</option>
-<option>Y014 – YULI BAKEKO</option>
-<option>F002 – FADJRIN</option>
-<option>R024 – ROMAIKA KIOS</option>
-<option>S037 – SOKIMIN SEBRANG</option>
-<option>D010 – DICKY SEBRANG</option>
-<option>A111 – ALKA KIOS</option>
-<option>B064 – BEACHES CAFE</option>
-</select>
+    <input type="date" id="tanggal">
 
-<button onclick="checkIn()">🟢 CHECK-IN</button>
-<button class="btn3" onclick="checkOut()">🔴 CHECK-OUT</button>
+    <select id="outlet">
+        <option value="">Pilih Outlet</option>
+        <option>A088 – AMELIA BAKEKO</option>
+        <option>A095 – AMOR KIOS</option>
+        <option>A120 – AGORA TIMUR NUSANTARA</option>
+        <option>A124 – AZIZAH KIOS</option>
+        <option>A129 – APRI KIOS SEBRANG</option>
+        <option>D029 – DILA KIOS</option>
+        <option>D044 – DILLA KIOS PASIR PANJANG</option>
+        <option>E004 – EMMI TAN BU</option>
+        <option>H040 – HENDRO KOLAM AIR BESAR</option>
+        <option>I042 – IBU HASNI NASKUN</option>
+        <option>J012 – JOKO MAS</option>
+        <option>K018 – KODAR MAS</option>
+        <option>K055 – KIOS IRMA</option>
+        <option>M085 – MAULANA KIOS</option>
+        <option>N003 – NANDO</option>
+        <option>P032 – PUTRA SOLO</option>
+        <option>R038 – RS MISI SEBRANG</option>
+        <option>S050 – SUMBER REJEKI PASIR PANJANG</option>
+        <option>S076 – SINAR MERAPI</option>
+        <option>S091 – SINAR MUDA KIOS (EBA)</option>
+        <option>S092 – KANTIN SMAN 2 (SLAMET)</option>
+        <option>S111 – SABYAN KIOS</option>
+        <option>S160 – SIMPANG TIGA KIOS</option>
+        <option>T002 – ANTO KIOS</option>
+        <option>Y014 – YULI BAKEKO</option>
+        <option>F002 – FADJRIN</option>
+        <option>R024 – ROMAIKA KIOS</option>
+        <option>S037 – SOKIMIN SEBRANG</option>
+        <option>D010 – DICKY SEBRANG</option>
+        <option>A111 – ALKA KIOS</option>
+        <option>B064 – BEACHES CAFE</option>
+    </select>
 
-<div id="map"></div>
+    <button class="btn-green" onclick="checkIn()">🟢 CHECK-IN</button>
+    <button class="btn-red" onclick="checkOut()">🔴 CHECK-OUT</button>
 </div>
 
 <div class="card">
-<button class="btn2" onclick="exportXLSX()">⬇ Export Excel (.xlsx)</button>
-<table id="tbl"></table>
+    <button onclick="exportExcel()">⬇ Export Excel (.xlsx)</button>
+
+    <table id="table">
+        <tr>
+            <th>Tanggal</th>
+            <th>Outlet</th>
+            <th>Check-In</th>
+            <th>Check-Out</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Sales</th>
+        </tr>
+    </table>
 </div>
 
 </div>
 
 <script>
-let orders = JSON.parse(localStorage.getItem("visits")) || [];
-let salesName = localStorage.getItem("sales");
-let map, marker, current;
+let visits = JSON.parse(localStorage.getItem("visits")) || [];
+let currentVisit = null;
 
-if(salesName){
-login.style.display="none";
-app.classList.remove("hidden");
-document.getElementById("salesName").innerText="Sales: "+salesName;
+// AUTO LOGIN
+const savedSales = localStorage.getItem("salesName");
+if(savedSales){
+    loginBox.style.display = "none";
+    app.classList.remove("hidden");
+    salesName.innerText = "Sales: " + savedSales;
 }
 
 function login(){
-localStorage.setItem("sales",sales.value);
-location.reload();
-}
+    const name = document.getElementById("salesInput").value.trim();
+    if(!name) return alert("Masukkan nama sales");
 
-function initMap(lat,lng){
-map=new google.maps.Map(document.getElementById("map"),{
-center:{lat,lng},zoom:16
-});
-marker=new google.maps.Marker({position:{lat,lng},map});
+    localStorage.setItem("salesName", name);
+    location.reload();
 }
 
 function checkIn(){
-navigator.geolocation.getCurrentPosition(pos=>{
-current={
-tgl:tgl.value,
-outlet:outlet.value,
-checkin:new Date().toLocaleTimeString(),
-lat:pos.coords.latitude,
-lng:pos.coords.longitude
-};
-initMap(current.lat,current.lng);
-});
+    if(!tanggal.value || !outlet.value){
+        alert("Isi tanggal dan outlet");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(pos=>{
+        currentVisit = {
+            tanggal: tanggal.value,
+            outlet: outlet.value,
+            checkin: new Date().toLocaleTimeString(),
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+        };
+        alert("Check-in berhasil");
+    },()=>{
+        alert("GPS tidak aktif");
+    });
 }
 
 function checkOut(){
-if(!current) return alert("Belum check-in");
-current.checkout=new Date().toLocaleTimeString();
-current.sales=salesName;
-orders.push(current);
-localStorage.setItem("visits",JSON.stringify(orders));
-render();
-alert("Kunjungan tersimpan");
+    if(!currentVisit){
+        alert("Belum check-in");
+        return;
+    }
+
+    currentVisit.checkout = new Date().toLocaleTimeString();
+    currentVisit.sales = localStorage.getItem("salesName");
+
+    visits.push(currentVisit);
+    localStorage.setItem("visits", JSON.stringify(visits));
+    currentVisit = null;
+
+    render();
+    alert("Kunjungan tersimpan");
 }
 
 function render(){
-let html=`<tr>
-<th>Tgl</th><th>Outlet</th><th>Check-in</th>
-<th>Check-out</th><th>Sales</th></tr>`;
-orders.forEach(o=>{
-html+=`<tr>
-<td>${o.tgl}</td>
-<td>${o.outlet}</td>
-<td>${o.checkin}</td>
-<td>${o.checkout}</td>
-<td>${o.sales}</td>
-</tr>`;
-});
-tbl.innerHTML=html;
+    let html = `
+    <tr>
+        <th>Tanggal</th>
+        <th>Outlet</th>
+        <th>Check-In</th>
+        <th>Check-Out</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Sales</th>
+    </tr>`;
+
+    visits.forEach(v=>{
+        html += `
+        <tr>
+            <td>${v.tanggal}</td>
+            <td>${v.outlet}</td>
+            <td>${v.checkin}</td>
+            <td>${v.checkout}</td>
+            <td>${v.lat.toFixed(5)}</td>
+            <td>${v.lng.toFixed(5)}</td>
+            <td>${v.sales}</td>
+        </tr>`;
+    });
+
+    document.getElementById("table").innerHTML = html;
 }
 
-function exportXLSX(){
-let ws=XLSX.utils.json_to_sheet(orders);
-let wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Kunjungan");
-XLSX.writeFile(wb,"laporan-kunjungan.xlsx");
+function exportExcel(){
+    const ws = XLSX.utils.json_to_sheet(visits);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Kunjungan Sales");
+    XLSX.writeFile(wb, "laporan-kunjungan-sales.xlsx");
 }
 
 render();
