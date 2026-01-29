@@ -2,50 +2,105 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Sales Order Enterprise</title>
+<title>Sales Order Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
-body{margin:0;font-family:-apple-system;background:#f4f6f9}
+*{box-sizing:border-box}
+body{
+font-family:-apple-system,BlinkMacSystemFont,Arial;
+margin:0;
+background:#f4f6f9;
+}
+
 .hidden{display:none}
-header{background:linear-gradient(135deg,#0f172a,#1e40af);color:#fff;
-padding:25px;text-align:center;border-radius:0 0 25px 25px}
-.card{background:#fff;margin:15px;padding:18px;border-radius:18px;
-box-shadow:0 10px 25px rgba(0,0,0,.06)}
-input,select{width:100%;padding:12px;margin-top:8px;border-radius:12px;border:1px solid #ddd}
-button{width:100%;padding:14px;border:none;border-radius:14px;
-background:#2563eb;color:#fff;font-size:16px;margin-top:12px}
-.small{font-size:13px;color:#555}
-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
-th,td{padding:7px;border-bottom:1px solid #eee}
+
+header{
+background:linear-gradient(135deg,#0f172a,#1e3a8a);
+color:white;
+padding:25px;
+border-radius:0 0 25px 25px;
+text-align:center;
+}
+
+.card{
+background:white;
+margin:15px;
+padding:18px;
+border-radius:18px;
+box-shadow:0 10px 25px rgba(0,0,0,.06);
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin-top:6px;
+border-radius:12px;
+border:1px solid #ddd;
+font-size:15px;
+}
+
+button{
+width:100%;
+padding:14px;
+border-radius:14px;
+border:none;
+font-size:16px;
+margin-top:12px;
+color:white;
+background:#2563eb;
+}
+
+.btn2{background:#059669}
+.btn3{background:#25D366}
+.btnDel{background:#ef4444;padding:6px 10px;font-size:12px}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+font-size:13px;
+}
+
+th,td{
+padding:8px;
+border-bottom:1px solid #eee;
+}
+
 th{background:#f1f5f9}
-.del{background:#ef4444;padding:5px 8px;border-radius:8px}
-.outletBox{padding:10px;border-bottom:1px solid #eee;cursor:pointer}
-.popup{position:fixed;top:0;left:0;right:0;bottom:0;background:#0007;
-display:none;align-items:center;justify-content:center}
-.popupContent{background:#fff;padding:20px;border-radius:15px;width:90%}
+
+.totalBox{
+background:#0f172a;
+color:white;
+padding:15px;
+border-radius:15px;
+margin-top:15px;
+text-align:center;
+font-size:18px;
+}
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
 <div id="login" class="card">
 <h2>🔐 Login Sales</h2>
-<input id="sales" placeholder="Nama sales">
+<input id="sales" placeholder="Nama Sales">
 <button onclick="login()">Masuk</button>
 </div>
 
+<!-- APP -->
 <div id="app" class="hidden">
 
 <header>
-<h2>📦 SALES ORDER ENTERPRISE</h2>
+<h2>📦 SALES ORDER PRO</h2>
 <div id="salesName"></div>
 </header>
 
 <div class="card">
 <input type="date" id="tgl">
+
 <select id="outlet">
 <option value="">Pilih Outlet</option>
 <option>A088 – AMELIA BAKEKO</option>
@@ -81,124 +136,105 @@ display:none;align-items:center;justify-content:center}
 <option>B064 – BEACHES CAFE</option>
 </select>
 
-<input id="produk" placeholder="Produk">
+<input id="produk" placeholder="Nama Produk">
 <input id="qty" type="number" placeholder="Qty">
 <input id="harga" type="number" placeholder="Harga">
 
-<button onclick="tambah()">➕ Simpan + GPS</button>
+<button onclick="tambah()">➕ Simpan Order</button>
 </div>
 
 <div class="card">
-<select id="filter" onchange="render()">
-<option value="all">Semua</option>
-<option value="today">Hari ini</option>
-<option value="week">Mingguan</option>
-</select>
+<button class="btn2" onclick="exportExcel()">⬇ Export Excel</button>
+<button class="btn3" onclick="kirimWA()">📲 Kirim WhatsApp</button>
 
-<canvas id="chart"></canvas>
-</div>
-
-<div class="card">
-<h3>📊 Total per Outlet</h3>
-<div id="rekap"></div>
-</div>
-
-<div class="card">
 <table id="tbl"></table>
+
+<div class="totalBox" id="totalHari"></div>
 </div>
 
-</div>
-
-<div class="popup" id="popup" onclick="this.style.display='none'">
-<div class="popupContent" id="popupContent"></div>
 </div>
 
 <script>
-let orders=JSON.parse(localStorage.getItem("orders"))||[];
-let sales=localStorage.getItem("sales");
+let orders = JSON.parse(localStorage.getItem("orders"))||[];
+let salesName = localStorage.getItem("sales");
 
-if(sales){
-login.style.display="none";
-app.classList.remove("hidden");
-salesName.innerText="Sales: "+sales;
+if(salesName){
+document.getElementById("login").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+document.getElementById("salesName").innerText="Sales: "+salesName;
 }
 
 function login(){
-localStorage.setItem("sales",sales.value);
+const s=document.getElementById("sales").value;
+if(!s) return alert("Isi nama sales");
+localStorage.setItem("sales",s);
 location.reload();
 }
 
 function tambah(){
-navigator.geolocation.getCurrentPosition(pos=>{
-orders.push({
+const o={
 tgl:tgl.value,
 outlet:outlet.value,
 produk:produk.value,
 qty:+qty.value,
-harga:+harga.value,
-total:+qty.value*+harga.value,
-lat:pos.coords.latitude,
-lng:pos.coords.longitude
-});
+harga:+harga.value
+};
+o.total=o.qty*o.harga;
+orders.push(o);
 localStorage.setItem("orders",JSON.stringify(orders));
 render();
-});
-}
-
-function getFiltered(){
-const f=filter.value;
-const now=new Date();
-return orders.filter(o=>{
-const d=new Date(o.tgl);
-if(f==="today") return d.toDateString()===now.toDateString();
-if(f==="week") return (now-d)/(1000*60*60*24)<=7;
-return true;
-});
+produk.value="";qty.value="";harga.value="";
 }
 
 function render(){
-const data=getFiltered();
-let totalOutlet={};
-let labels=[],values=[];
+let html=`<tr>
+<th>Tgl</th><th>Outlet</th><th>Produk</th>
+<th>Qty</th><th>Total</th><th></th></tr>`;
+let total=0;
 
-data.forEach(o=>{
-totalOutlet[o.outlet]=(totalOutlet[o.outlet]||0)+o.total;
-});
-
-rekap.innerHTML="";
-for(let k in totalOutlet){
-rekap.innerHTML+=`<div class="outletBox"
-onclick="detail('${k}')">${k}<br><b>${totalOutlet[k]}</b></div>`;
-labels.push(k);
-values.push(totalOutlet[k]);
-}
-
-new Chart(chart,{
-type:'bar',
-data:{labels,datasets:[{data:values}]},
-options:{plugins:{legend:{display:false}}}
-});
-
-let html=`<tr><th>Tgl</th><th>Outlet</th><th>Total</th><th>GPS</th></tr>`;
-data.forEach(o=>{
+orders.forEach((o,i)=>{
 html+=`<tr>
 <td>${o.tgl}</td>
 <td>${o.outlet}</td>
+<td>${o.produk}</td>
+<td>${o.qty}</td>
 <td>${o.total}</td>
-<td class="small">${o.lat.toFixed(4)},${o.lng.toFixed(4)}</td>
+<td><button class="btnDel" onclick="del(${i})">X</button></td>
 </tr>`;
+total+=o.total;
 });
 tbl.innerHTML=html;
+totalHari.innerText="TOTAL SEMUA: "+total;
 }
 
-function detail(out){
-let d=orders.filter(o=>o.outlet===out);
-let html=`<h3>${out}</h3>`;
-d.forEach(x=>{
-html+=`${x.tgl} - ${x.produk} (${x.qty}) = ${x.total}<br>`;
+function del(i){
+if(confirm("Hapus data?")){
+orders.splice(i,1);
+localStorage.setItem("orders",JSON.stringify(orders));
+render();
+}
+}
+
+function exportExcel(){
+let csv="Tanggal,Outlet,Produk,Qty,Harga,Total\n";
+orders.forEach(o=>{
+csv+=`${o.tgl},${o.outlet},${o.produk},${o.qty},${o.harga},${o.total}\n`;
 });
-popupContent.innerHTML=html;
-popup.style.display="flex";
+let a=document.createElement("a");
+a.href=URL.createObjectURL(new Blob([csv]));
+a.download="sales-order.csv";
+a.click();
+}
+
+function kirimWA(){
+let t="*LAPORAN SALES*%0A";
+let total=0;
+orders.forEach(o=>{
+t+=`${o.tgl} - ${o.outlet}%0A${o.produk} x${o.qty} = ${o.total}%0A%0A`;
+total+=o.total;
+});
+t+=`TOTAL : ${total}`;
+window.open("https://wa.me/?text="+t);
 }
 
 render();
