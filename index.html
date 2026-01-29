@@ -2,239 +2,203 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Sales Visit System</title>
+<title>Sales Order Enterprise</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- XLSX EXPORT -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-    margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,Arial;
-    background:#f4f6f9;
-}
+body{margin:0;font-family:-apple-system;background:#f4f6f9}
 .hidden{display:none}
-
-header{
-    background:linear-gradient(135deg,#0f172a,#1e40af);
-    color:#fff;
-    padding:25px;
-    text-align:center;
-    border-radius:0 0 25px 25px;
-}
-
-.card{
-    background:#fff;
-    margin:15px;
-    padding:18px;
-    border-radius:18px;
-    box-shadow:0 10px 25px rgba(0,0,0,.06);
-}
-
-input,select,button{
-    width:100%;
-    padding:12px;
-    border-radius:12px;
-    margin-top:8px;
-    border:1px solid #ddd;
-    font-size:15px;
-}
-
-button{
-    background:#2563eb;
-    color:#fff;
-    border:none;
-}
-
-.btn-red{background:#dc2626}
-.btn-green{background:#059669}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
-    font-size:13px;
-}
-
-th,td{
-    padding:8px;
-    border-bottom:1px solid #eee;
-}
-
-th{
-    background:#f1f5f9;
-}
+header{background:linear-gradient(135deg,#0f172a,#1e40af);color:#fff;
+padding:25px;text-align:center;border-radius:0 0 25px 25px}
+.card{background:#fff;margin:15px;padding:18px;border-radius:18px;
+box-shadow:0 10px 25px rgba(0,0,0,.06)}
+input,select{width:100%;padding:12px;margin-top:8px;border-radius:12px;border:1px solid #ddd}
+button{width:100%;padding:14px;border:none;border-radius:14px;
+background:#2563eb;color:#fff;font-size:16px;margin-top:12px}
+.small{font-size:13px;color:#555}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{padding:7px;border-bottom:1px solid #eee}
+th{background:#f1f5f9}
+.del{background:#ef4444;padding:5px 8px;border-radius:8px}
+.outletBox{padding:10px;border-bottom:1px solid #eee;cursor:pointer}
+.popup{position:fixed;top:0;left:0;right:0;bottom:0;background:#0007;
+display:none;align-items:center;justify-content:center}
+.popupContent{background:#fff;padding:20px;border-radius:15px;width:90%}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="loginBox" class="card">
-    <h2>🔐 Login Sales</h2>
-    <input id="salesInput" placeholder="Nama Sales">
-    <button onclick="login()">Masuk</button>
+<div id="login" class="card">
+<h2>🔐 Login Sales</h2>
+<input id="sales" placeholder="Nama sales">
+<button onclick="login()">Masuk</button>
 </div>
 
-<!-- APP -->
 <div id="app" class="hidden">
 
 <header>
-    <h2>📍 SALES VISIT</h2>
-    <div id="salesName"></div>
+<h2>📦 SALES ORDER ENTERPRISE</h2>
+<div id="salesName"></div>
 </header>
 
 <div class="card">
-    <input type="date" id="tanggal">
+<input type="date" id="tgl">
+<select id="outlet">
+<option value="">Pilih Outlet</option>
+<option>A088 – AMELIA BAKEKO</option>
+<option>A095 – AMOR KIOS</option>
+<option>A120 – AGORA TIMUR NUSANTARA</option>
+<option>A124 – AZIZAH KIOS</option>
+<option>A129 – APRI KIOS SEBRANG</option>
+<option>D029 – DILA KIOS</option>
+<option>D044 – DILLA KIOS PASIR PANJANG</option>
+<option>E004 – EMMI TAN BU</option>
+<option>H040 – HENDRO KOLAM AIR BESAR</option>
+<option>I042 – IBU HASNI NASKUN</option>
+<option>J012 – JOKO MAS</option>
+<option>K018 – KODAR MAS</option>
+<option>K055 – KIOS IRMA</option>
+<option>M085 – MAULANA KIOS</option>
+<option>N003 – NANDO</option>
+<option>P032 – PUTRA SOLO</option>
+<option>R038 – RS MISI SEBRANG</option>
+<option>S050 – SUMBER REJEKI PASIR PANJANG</option>
+<option>S076 – SINAR MERAPI</option>
+<option>S091 – SINAR MUDA KIOS (EBA)</option>
+<option>S092 – KANTIN SMAN 2 (SLAMET)</option>
+<option>S111 – SABYAN KIOS</option>
+<option>S160 – SIMPANG TIGA KIOS</option>
+<option>T002 – ANTO KIOS</option>
+<option>Y014 – YULI BAKEKO</option>
+<option>F002 – FADJRIN</option>
+<option>R024 – ROMAIKA KIOS</option>
+<option>S037 – SOKIMIN SEBRANG</option>
+<option>D010 – DICKY SEBRANG</option>
+<option>A111 – ALKA KIOS</option>
+<option>B064 – BEACHES CAFE</option>
+</select>
 
-    <select id="outlet">
-        <option value="">Pilih Outlet</option>
-        <option>A088 – AMELIA BAKEKO</option>
-        <option>A095 – AMOR KIOS</option>
-        <option>A120 – AGORA TIMUR NUSANTARA</option>
-        <option>A124 – AZIZAH KIOS</option>
-        <option>A129 – APRI KIOS SEBRANG</option>
-        <option>D029 – DILA KIOS</option>
-        <option>D044 – DILLA KIOS PASIR PANJANG</option>
-        <option>E004 – EMMI TAN BU</option>
-        <option>H040 – HENDRO KOLAM AIR BESAR</option>
-        <option>I042 – IBU HASNI NASKUN</option>
-        <option>J012 – JOKO MAS</option>
-        <option>K018 – KODAR MAS</option>
-        <option>K055 – KIOS IRMA</option>
-        <option>M085 – MAULANA KIOS</option>
-        <option>N003 – NANDO</option>
-        <option>P032 – PUTRA SOLO</option>
-        <option>R038 – RS MISI SEBRANG</option>
-        <option>S050 – SUMBER REJEKI PASIR PANJANG</option>
-        <option>S076 – SINAR MERAPI</option>
-        <option>S091 – SINAR MUDA KIOS (EBA)</option>
-        <option>S092 – KANTIN SMAN 2 (SLAMET)</option>
-        <option>S111 – SABYAN KIOS</option>
-        <option>S160 – SIMPANG TIGA KIOS</option>
-        <option>T002 – ANTO KIOS</option>
-        <option>Y014 – YULI BAKEKO</option>
-        <option>F002 – FADJRIN</option>
-        <option>R024 – ROMAIKA KIOS</option>
-        <option>S037 – SOKIMIN SEBRANG</option>
-        <option>D010 – DICKY SEBRANG</option>
-        <option>A111 – ALKA KIOS</option>
-        <option>B064 – BEACHES CAFE</option>
-    </select>
+<input id="produk" placeholder="Produk">
+<input id="qty" type="number" placeholder="Qty">
+<input id="harga" type="number" placeholder="Harga">
 
-    <button class="btn-green" onclick="checkIn()">🟢 CHECK-IN</button>
-    <button class="btn-red" onclick="checkOut()">🔴 CHECK-OUT</button>
+<button onclick="tambah()">➕ Simpan + GPS</button>
 </div>
 
 <div class="card">
-    <button onclick="exportExcel()">⬇ Export Excel (.xlsx)</button>
+<select id="filter" onchange="render()">
+<option value="all">Semua</option>
+<option value="today">Hari ini</option>
+<option value="week">Mingguan</option>
+</select>
 
-    <table id="table">
-        <tr>
-            <th>Tanggal</th>
-            <th>Outlet</th>
-            <th>Check-In</th>
-            <th>Check-Out</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
-            <th>Sales</th>
-        </tr>
-    </table>
+<canvas id="chart"></canvas>
 </div>
 
+<div class="card">
+<h3>📊 Total per Outlet</h3>
+<div id="rekap"></div>
+</div>
+
+<div class="card">
+<table id="tbl"></table>
+</div>
+
+</div>
+
+<div class="popup" id="popup" onclick="this.style.display='none'">
+<div class="popupContent" id="popupContent"></div>
 </div>
 
 <script>
-let visits = JSON.parse(localStorage.getItem("visits")) || [];
-let currentVisit = null;
+let orders=JSON.parse(localStorage.getItem("orders"))||[];
+let sales=localStorage.getItem("sales");
 
-// AUTO LOGIN
-const savedSales = localStorage.getItem("salesName");
-if(savedSales){
-    loginBox.style.display = "none";
-    app.classList.remove("hidden");
-    salesName.innerText = "Sales: " + savedSales;
+if(sales){
+login.style.display="none";
+app.classList.remove("hidden");
+salesName.innerText="Sales: "+sales;
 }
 
 function login(){
-    const name = document.getElementById("salesInput").value.trim();
-    if(!name) return alert("Masukkan nama sales");
-
-    localStorage.setItem("salesName", name);
-    location.reload();
+localStorage.setItem("sales",sales.value);
+location.reload();
 }
 
-function checkIn(){
-    if(!tanggal.value || !outlet.value){
-        alert("Isi tanggal dan outlet");
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(pos=>{
-        currentVisit = {
-            tanggal: tanggal.value,
-            outlet: outlet.value,
-            checkin: new Date().toLocaleTimeString(),
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-        };
-        alert("Check-in berhasil");
-    },()=>{
-        alert("GPS tidak aktif");
-    });
+function tambah(){
+navigator.geolocation.getCurrentPosition(pos=>{
+orders.push({
+tgl:tgl.value,
+outlet:outlet.value,
+produk:produk.value,
+qty:+qty.value,
+harga:+harga.value,
+total:+qty.value*+harga.value,
+lat:pos.coords.latitude,
+lng:pos.coords.longitude
+});
+localStorage.setItem("orders",JSON.stringify(orders));
+render();
+});
 }
 
-function checkOut(){
-    if(!currentVisit){
-        alert("Belum check-in");
-        return;
-    }
-
-    currentVisit.checkout = new Date().toLocaleTimeString();
-    currentVisit.sales = localStorage.getItem("salesName");
-
-    visits.push(currentVisit);
-    localStorage.setItem("visits", JSON.stringify(visits));
-    currentVisit = null;
-
-    render();
-    alert("Kunjungan tersimpan");
+function getFiltered(){
+const f=filter.value;
+const now=new Date();
+return orders.filter(o=>{
+const d=new Date(o.tgl);
+if(f==="today") return d.toDateString()===now.toDateString();
+if(f==="week") return (now-d)/(1000*60*60*24)<=7;
+return true;
+});
 }
 
 function render(){
-    let html = `
-    <tr>
-        <th>Tanggal</th>
-        <th>Outlet</th>
-        <th>Check-In</th>
-        <th>Check-Out</th>
-        <th>Latitude</th>
-        <th>Longitude</th>
-        <th>Sales</th>
-    </tr>`;
+const data=getFiltered();
+let totalOutlet={};
+let labels=[],values=[];
 
-    visits.forEach(v=>{
-        html += `
-        <tr>
-            <td>${v.tanggal}</td>
-            <td>${v.outlet}</td>
-            <td>${v.checkin}</td>
-            <td>${v.checkout}</td>
-            <td>${v.lat.toFixed(5)}</td>
-            <td>${v.lng.toFixed(5)}</td>
-            <td>${v.sales}</td>
-        </tr>`;
-    });
+data.forEach(o=>{
+totalOutlet[o.outlet]=(totalOutlet[o.outlet]||0)+o.total;
+});
 
-    document.getElementById("table").innerHTML = html;
+rekap.innerHTML="";
+for(let k in totalOutlet){
+rekap.innerHTML+=`<div class="outletBox"
+onclick="detail('${k}')">${k}<br><b>${totalOutlet[k]}</b></div>`;
+labels.push(k);
+values.push(totalOutlet[k]);
 }
 
-function exportExcel(){
-    const ws = XLSX.utils.json_to_sheet(visits);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Kunjungan Sales");
-    XLSX.writeFile(wb, "laporan-kunjungan-sales.xlsx");
+new Chart(chart,{
+type:'bar',
+data:{labels,datasets:[{data:values}]},
+options:{plugins:{legend:{display:false}}}
+});
+
+let html=`<tr><th>Tgl</th><th>Outlet</th><th>Total</th><th>GPS</th></tr>`;
+data.forEach(o=>{
+html+=`<tr>
+<td>${o.tgl}</td>
+<td>${o.outlet}</td>
+<td>${o.total}</td>
+<td class="small">${o.lat.toFixed(4)},${o.lng.toFixed(4)}</td>
+</tr>`;
+});
+tbl.innerHTML=html;
+}
+
+function detail(out){
+let d=orders.filter(o=>o.outlet===out);
+let html=`<h3>${out}</h3>`;
+d.forEach(x=>{
+html+=`${x.tgl} - ${x.produk} (${x.qty}) = ${x.total}<br>`;
+});
+popupContent.innerHTML=html;
+popup.style.display="flex";
 }
 
 render();
