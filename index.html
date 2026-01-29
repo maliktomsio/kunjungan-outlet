@@ -8,45 +8,45 @@
 <style>
 *{box-sizing:border-box}
 body{
-font-family:-apple-system,BlinkMacSystemFont,Arial;
-margin:0;
-background:#f4f6f9;
+  font-family:-apple-system,BlinkMacSystemFont,Arial;
+  margin:0;
+  background:#f4f6f9;
 }
 
 header{
-background:linear-gradient(135deg,#0f172a,#1e3a8a);
-color:white;
-padding:25px;
-border-radius:0 0 25px 25px;
-text-align:center;
+  background:linear-gradient(135deg,#0f172a,#1e3a8a);
+  color:white;
+  padding:25px;
+  border-radius:0 0 25px 25px;
+  text-align:center;
 }
 
 .card{
-background:white;
-margin:15px;
-padding:18px;
-border-radius:18px;
-box-shadow:0 10px 25px rgba(0,0,0,.06);
+  background:white;
+  margin:15px;
+  padding:18px;
+  border-radius:18px;
+  box-shadow:0 10px 25px rgba(0,0,0,.06);
 }
 
 input,select{
-width:100%;
-padding:12px;
-margin-top:6px;
-border-radius:12px;
-border:1px solid #ddd;
-font-size:15px;
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  font-size:15px;
 }
 
 button{
-width:100%;
-padding:14px;
-border-radius:14px;
-border:none;
-font-size:16px;
-margin-top:12px;
-color:white;
-background:#2563eb;
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:none;
+  font-size:16px;
+  margin-top:12px;
+  color:white;
+  background:#2563eb;
 }
 
 .btn2{background:#059669}
@@ -55,52 +55,52 @@ background:#2563eb;
 .btnDel{background:#ef4444;padding:6px 10px;font-size:12px}
 
 table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-font-size:13px;
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+  font-size:13px;
 }
 
 th,td{
-padding:8px;
-border-bottom:1px solid #eee;
+  padding:8px;
+  border-bottom:1px solid #eee;
 }
 
 th{background:#f1f5f9}
 
 .totalBox{
-background:#0f172a;
-color:white;
-padding:15px;
-border-radius:15px;
-margin-top:15px;
-text-align:center;
-font-size:18px;
+  background:#0f172a;
+  color:white;
+  padding:15px;
+  border-radius:15px;
+  margin-top:15px;
+  text-align:center;
+  font-size:18px;
 }
 
 .progressBox{
-margin-top:15px;
+  margin-top:15px;
 }
 
 .bar{
-height:16px;
-background:#e5e7eb;
-border-radius:10px;
-overflow:hidden;
-margin-top:6px;
+  height:16px;
+  background:#e5e7eb;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:6px;
 }
 
 .bar span{
-display:block;
-height:100%;
-background:#22c55e;
-width:0%;
+  display:block;
+  height:100%;
+  background:#22c55e;
+  width:0%;
 }
 
 .visited{
-background:#dcfce7;
-color:#065f46;
-font-weight:600;
+  background:#dcfce7;
+  color:#065f46;
+  font-weight:600;
 }
 </style>
 </head>
@@ -112,9 +112,19 @@ font-weight:600;
 <div>Monitoring Kunjungan Outlet</div>
 </header>
 
+<!-- PILIH RUTE & TANGGAL -->
 <div class="card">
-<input type="date" id="tgl">
+<select id="rute">
+  <option value="">Pilih Rute</option>
+  <option value="Sebrang 1">Sebrang 1</option>
+  <option value="Sebrang 2">Sebrang 2</option>
+  <option value="Puncak 1&2">Puncak 1&2</option>
+  <option value="Kota 1&2">Kota 1&2</option>
+  <option value="Torea 1&2">Torea 1&2</option>
+  <option value="Pasar 1&2">Pasar 1&2</option>
+</select>
 
+<input type="date" id="tgl">
 <button class="btn2" onclick="mulaiHari()">▶ Mulai Hari</button>
 <button class="btnEnd" onclick="akhiriHari()">⛔ Akhiri Hari</button>
 
@@ -125,6 +135,7 @@ font-weight:600;
 </div>
 </div>
 
+<!-- FORM ORDER -->
 <div class="card">
 <select id="outlet"></select>
 
@@ -135,6 +146,7 @@ font-weight:600;
 <button onclick="tambah()">➕ Simpan Order</button>
 </div>
 
+<!-- LIST ORDER -->
 <div class="card">
 <button class="btn2" onclick="exportExcel()">⬇ Export Excel</button>
 <button class="btn3" onclick="kirimWA()">📲 Kirim WhatsApp</button>
@@ -145,161 +157,184 @@ font-weight:600;
 </div>
 
 <script>
-const outletList = [
-"A088 – AMELIA BAKEKO","A095 – AMOR KIOS","A120 – AGORA TIMUR NUSANTARA",
-"A124 – AZIZAH KIOS","A129 – APRI KIOS SEBRANG","D029 – DILA KIOS",
-"D044 – DILLA KIOS PASIR PANJANG","E004 – EMMI TAN BU",
-"H040 – HENDRO KOLAM AIR BESAR","I042 – IBU HASNI NASKUN",
-"J012 – JOKO MAS","K018 – KODAR MAS","K055 – KIOS IRMA",
-"M085 – MAULANA KIOS","N003 – NANDO","P032 – PUTRA SOLO",
-"R038 – RS MISI SEBRANG","S050 – SUMBER REJEKI PASIR PANJANG",
-"S076 – SINAR MERAPI","S091 – SINAR MUDA KIOS (EBA)",
-"S092 – KANTIN SMAN 2 (SLAMET)","S111 – SABYAN KIOS",
-"S160 – SIMPANG TIGA KIOS","T002 – ANTO KIOS","Y014 – YULI BAKEKO",
-"F002 – FADJRIN","R024 – ROMAIKA KIOS","S037 – SOKIMIN SEBRANG",
-"D010 – DICKY SEBRANG","A111 – ALKA KIOS","B064 – BEACHES CAFE"
-];
-
+// DATA ORDER & STATE
 let orders = JSON.parse(localStorage.getItem("orders")) || [];
 let activeDate = localStorage.getItem("activeDate");
+let activeRute = localStorage.getItem("activeRute");
 
-function mulaiHari(){
-if(!tgl.value) return alert("Pilih tanggal dulu");
-activeDate = tgl.value;
-localStorage.setItem("activeDate", activeDate);
-alert("Hari dimulai ✅");
-loadOutlet();
-render();
-}
-
-function akhiriHari(){
-if(!activeDate) return alert("Belum mulai hari");
-
-if(confirm("Akhiri hari dan reset kunjungan?")){
-orders = orders.filter(o => o.tgl !== activeDate);
-localStorage.setItem("orders", JSON.stringify(orders));
-localStorage.removeItem("activeDate");
-activeDate = null;
-render();
-loadOutlet();
-alert("Hari selesai. Data reset ✅");
-}
-}
-
-function loadOutlet(){
-outlet.innerHTML='<option value="">Pilih Outlet</option>';
-
-outletList.forEach(o=>{
-const opt=document.createElement("option");
-opt.value=o;
-opt.textContent=o;
-
-const sudah=orders.some(x =>
-x.tgl===activeDate && x.outlet===o
-);
-
-if(sudah){
-opt.textContent+=" ✓";
-opt.classList.add("visited");
-}
-outlet.appendChild(opt);
-});
-
-updateProgress();
-}
-
-function tambah(){
-if(!activeDate) return alert("Klik MULAI HARI dulu");
-if(!outlet.value) return alert("Pilih outlet");
-
-const o={
-tgl:activeDate,
-outlet:outlet.value,
-produk:produk.value,
-qty:+qty.value,
-harga:+harga.value
+// OUTLET PER RUTE (dummy/real bisa diupdate nanti)
+const ruteOutlets = {
+  "Sebrang 1": ["A129 – APRI KIOS SEBRANG","D010 – DICKY SEBRANG","S037 – SOKIMIN SEBRANG","R038 – RS MISI SEBRANG","S050 – SUMBER REJEKI PASIR PANJANG","D044 – DILLA KIOS PASIR PANJANG","S076 – SINAR MERAPI",
+                "A088 – AMELIA BAKEKO","A095 – AMOR KIOS","A120 – AGORA TIMUR NUSANTARA","K018 – KODAR MAS","M085 – MAULANA KIOS","N003 – NANDO","J012 – JOKO MAS","B064 – BEACHES CAFE","F002 – FADJRIN","S091 – SINAR MUDA KIOS (EBA)"],
+  "Sebrang 2": [""],
+  "Puncak 1": [""],
+  "Puncak 2": [""],
+  "Kota 1": [""],
+  "Kota 2": [""],
+  "Torea 1": [""],
+  "Torea 2": [""],
+  "Pasar 1": [""],
+  "Pasar 2": [""]
 };
 
-o.total=o.qty*o.harga;
-orders.push(o);
-
-localStorage.setItem("orders",JSON.stringify(orders));
-
-produk.value="";qty.value="";harga.value="";
-loadOutlet();
-render();
+// MULAI HARI
+function mulaiHari(){
+  if(!rute.value) return alert("Pilih rute dulu!");
+  if(!tgl.value) return alert("Pilih tanggal dulu");
+  
+  activeRute = rute.value;
+  activeDate = tgl.value;
+  
+  localStorage.setItem("activeRute", activeRute);
+  localStorage.setItem("activeDate", activeDate);
+  
+  alert(`Hari dimulai ✅\nRute: ${activeRute}`);
+  loadOutlet();
+  render();
 }
 
+// AKHIRI HARI
+function akhiriHari(){
+  if(!activeDate) return alert("Belum mulai hari");
+  if(confirm("Akhiri hari dan reset kunjungan?")){
+    orders = orders.filter(o => o.tgl !== activeDate || o.rute !== activeRute);
+    localStorage.setItem("orders", JSON.stringify(orders));
+    localStorage.removeItem("activeDate");
+    localStorage.removeItem("activeRute");
+    activeDate = null;
+    activeRute = null;
+    render();
+    loadOutlet();
+    alert("Hari selesai. Data reset ✅");
+  }
+}
+
+// LOAD OUTLET SESUAI RUTE
+function loadOutlet(){
+  outlet.innerHTML='<option value="">Pilih Outlet</option>';
+  if(!activeRute) return;
+
+  const list = ruteOutlets[activeRute] || [];
+  list.forEach(o=>{
+    const opt=document.createElement("option");
+    opt.value=o;
+    opt.textContent=o;
+
+    const sudah=orders.some(x =>
+      x.tgl===activeDate && x.outlet===o && x.rute===activeRute
+    );
+
+    if(sudah){
+      opt.textContent+=" ✓";
+      opt.classList.add("visited");
+    }
+    outlet.appendChild(opt);
+  });
+
+  updateProgress();
+}
+
+// TAMBAH ORDER
+function tambah(){
+  if(!activeDate) return alert("Klik MULAI HARI dulu");
+  if(!outlet.value) return alert("Pilih outlet");
+
+  const o={
+    tgl:activeDate,
+    rute:activeRute,
+    outlet:outlet.value,
+    produk:produk.value,
+    qty:+qty.value,
+    harga:+harga.value
+  };
+  o.total=o.qty*o.harga;
+  orders.push(o);
+
+  localStorage.setItem("orders",JSON.stringify(orders));
+
+  produk.value="";qty.value="";harga.value="";
+  loadOutlet();
+  render();
+}
+
+// RENDER TABEL
 function render(){
-let html=`<tr>
-<th>Outlet</th><th>Produk</th>
-<th>Qty</th><th>Total</th><th></th></tr>`;
+  let html=`<tr>
+  <th>Outlet</th><th>Produk</th>
+  <th>Qty</th><th>Total</th><th></th></tr>`;
 
-let total=0;
+  let total=0;
 
-orders.filter(o=>o.tgl===activeDate).forEach((o,i)=>{
-html+=`
-<tr>
-<td>${o.outlet}</td>
-<td>${o.produk}</td>
-<td>${o.qty}</td>
-<td>${o.total}</td>
-<td><button class="btnDel" onclick="hapus(${i})">X</button></td>
-</tr>`;
-total+=o.total;
-});
+  orders.filter(o=>o.tgl===activeDate && o.rute===activeRute).forEach((o,i)=>{
+    html+=`
+    <tr>
+      <td>${o.outlet}</td>
+      <td>${o.produk}</td>
+      <td>${o.qty}</td>
+      <td>${o.total}</td>
+      <td><button class="btnDel" onclick="hapus(${i})">X</button></td>
+    </tr>`;
+    total+=o.total;
+  });
 
-tbl.innerHTML=html;
-totalHari.innerText="TOTAL HARI INI : Rp "+total.toLocaleString("id-ID");
+  tbl.innerHTML=html;
+  totalHari.innerText="TOTAL HARI INI : Rp "+total.toLocaleString("id-ID");
 
-updateProgress();
+  updateProgress();
 }
 
+// HAPUS ORDER
 function hapus(i){
-orders.splice(i,1);
-localStorage.setItem("orders",JSON.stringify(orders));
-render();
-loadOutlet();
+  orders.splice(i,1);
+  localStorage.setItem("orders",JSON.stringify(orders));
+  render();
+  loadOutlet();
 }
 
+// PROGRESS BAR
 function updateProgress(){
-const dikunjungi=new Set(
-orders.filter(o=>o.tgl===activeDate).map(o=>o.outlet)
-).size;
+  const dikunjungi=new Set(
+    orders.filter(o=>o.tgl===activeDate && o.rute===activeRute).map(o=>o.outlet)
+  ).size;
 
-const totalOutlet=outletList.length;
-const persen=(dikunjungi/totalOutlet)*100;
+  const totalOutlet=(ruteOutlets[activeRute] || []).length;
+  const persen=(dikunjungi/totalOutlet)*100;
 
-progressText.innerText=`${dikunjungi} / ${totalOutlet} outlet`;
-bar.style.width=persen+"%";
+  progressText.innerText=`${dikunjungi} / ${totalOutlet} outlet`;
+  bar.style.width=persen+"%";
 }
 
+// EXPORT EXCEL
 function exportExcel(){
-let csv="Tanggal,Outlet,Produk,Qty,Harga,Total\n";
-orders.forEach(o=>{
-csv+=`${o.tgl},${o.outlet},${o.produk},${o.qty},${o.harga},${o.total}\n`;
-});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(new Blob([csv]));
-a.download="laporan-sales.csv";
-a.click();
+  let csv="Tanggal,Rute,Outlet,Produk,Qty,Harga,Total\n";
+  orders.forEach(o=>{
+    csv+=`${o.tgl},${o.rute},${o.outlet},${o.produk},${o.qty},${o.harga},${o.total}\n`;
+  });
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv]));
+  a.download="laporan-sales.csv";
+  a.click();
 }
 
+// KIRIM WHATSAPP
 function kirimWA(){
-let t="*LAPORAN SALES*%0A%0A";
-let total=0;
-orders.filter(o=>o.tgl===activeDate).forEach(o=>{
-t+=`${o.outlet}%0A${o.produk} x${o.qty} = ${o.total}%0A%0A`;
-total+=o.total;
-});
-t+=`TOTAL : ${total}`;
-window.open("https://wa.me/?text="+t);
+  if(!activeDate) return alert("Klik MULAI HARI dulu");
+  let t="*LAPORAN SALES*%0A%0A";
+  let total=0;
+  orders.filter(o=>o.tgl===activeDate && o.rute===activeRute).forEach(o=>{
+    t+=`${o.outlet}%0A${o.produk} x${o.qty} = ${o.total}%0A%0A`;
+    total+=o.total;
+  });
+  t+=`TOTAL : ${total}`;
+  window.open("https://wa.me/?text="+t);
 }
 
-if(activeDate){
-tgl.value=activeDate;
-loadOutlet();
-render();
+// AUTO LOAD JIKA MASIH ADA
+if(activeDate && activeRute){
+  tgl.value=activeDate;
+  rute.value=activeRute;
+  loadOutlet();
+  render();
 }
 </script>
 
