@@ -2,153 +2,119 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Sales Order – Multi Rute</title>
+<title>IJ SALES PRO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 *{box-sizing:border-box}
 body{
 font-family:-apple-system,BlinkMacSystemFont,Arial;
-margin:0;
-background:#f4f6f9;
+margin:0;background:#f1f5f9
 }
-
 header{
 background:linear-gradient(135deg,#0f172a,#1e3a8a);
-color:white;
-padding:25px;
-border-radius:0 0 25px 25px;
-text-align:center;
+color:white;padding:20px;
+border-radius:0 0 20px 20px;
+text-align:center
 }
-
 .card{
 background:white;
-margin:15px;
-padding:18px;
-border-radius:18px;
-box-shadow:0 10px 25px rgba(0,0,0,.06);
+margin:12px;padding:14px;
+border-radius:16px;
+box-shadow:0 10px 20px rgba(0,0,0,.06)
 }
-
-input,select{
-width:100%;
-padding:12px;
+select,input{
+width:100%;padding:11px;
 margin-top:6px;
 border-radius:12px;
-border:1px solid #ddd;
-font-size:15px;
+border:1px solid #ddd
+}
+button{
+width:100%;padding:12px;
+margin-top:8px;
+border:none;border-radius:12px;
+color:white;background:#2563eb
 }
 
-button{
-width:100%;
-padding:14px;
-border-radius:14px;
-border:none;
-font-size:16px;
-margin-top:12px;
-color:white;
-background:#2563eb;
-}
+.row{display:flex;gap:6px}
+.row button{flex:1}
 
 .btn2{background:#059669}
-.btnEnd{background:#dc2626}
 .btn3{background:#25D366}
-.btnDel{background:#ef4444;padding:6px 10px;font-size:12px}
+.btnEnd{background:#dc2626}
+.btnDel{background:#ef4444;padding:5px 8px;font-size:12px;width:auto}
 
-.visited{
-background:#dcfce7;
-color:#065f46;
-font-weight:600;
+.visited{background:#dcfce7;font-weight:600}
+
+.bar{background:#e5e7eb;height:14px;border-radius:10px;margin-top:6px}
+.bar span{display:block;height:100%;background:#22c55e;width:0%}
+
+table{width:100%;font-size:12px;margin-top:10px}
+th,td{padding:6px;border-bottom:1px solid #eee}
+
+.badge{
+padding:3px 6px;border-radius:8px;font-size:11px
 }
-
-.progressBox{margin-top:15px}
-
-.bar{
-height:16px;
-background:#e5e7eb;
-border-radius:10px;
-overflow:hidden;
-margin-top:6px;
-}
-
-.bar span{
-display:block;
-height:100%;
-background:#22c55e;
-width:0%;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-font-size:13px;
-}
-
-th,td{
-padding:8px;
-border-bottom:1px solid #eee;
-}
-
-.totalBox{
-background:#0f172a;
-color:white;
-padding:15px;
-border-radius:15px;
-margin-top:15px;
-text-align:center;
-font-size:18px;
-}
+.on{background:#dbeafe;color:#1e40af}
+.done{background:#dcfce7;color:#065f46}
 </style>
 </head>
 
 <body>
 
 <header>
-<h2>📦 SALES ORDER MULTI RUTE</h2>
-<div>SEBRANG 1 & PASAR 1</div>
+<h3>📦 IJ SALES PRO</h3>
+<div>Monitoring Kunjungan & Order</div>
 </header>
 
 <div class="card">
 <select id="rute" onchange="gantiRute()">
-<option value="SEBRANG 1">SEBRANG 1</option>
-<option value="PASAR 1">PASAR 1</option>
+<option>SEBRANG 1</option>
+<option>PASAR 1</option>
 </select>
 
 <input type="date" id="tgl">
 
-<button class="btn2" onclick="mulaiHari()">▶ Mulai Hari</button>
-<button class="btnEnd" onclick="akhiriHari()">⛔ Akhiri Hari</button>
-
-<div class="progressBox">
-<b>📍 Progress Rute</b>
-<div id="progressText">0 / 0 outlet</div>
-<div class="bar"><span id="bar"></span></div>
+<div class="row">
+<button class="btn2" onclick="mulaiHari()">▶ Mulai</button>
+<button class="btnEnd" onclick="akhiriHari()">⛔ Akhiri</button>
 </div>
+
+<b id="progressText"></b>
+<div class="bar"><span id="bar"></span></div>
 </div>
 
 <div class="card">
 <select id="outlet"></select>
 
-<input id="produk" placeholder="Nama Produk">
+<div class="row">
+<button onclick="checkin()">⏱ Check-In</button>
+<button onclick="checkout()">✔ Selesai</button>
+</div>
+
+<input id="produk" placeholder="Produk">
+<div class="row">
 <input id="qty" type="number" placeholder="Qty">
 <input id="harga" type="number" placeholder="Harga">
+</div>
 
-<button onclick="tambah()">➕ Simpan Order</button>
+<button onclick="tambah()">➕ Tambah Item</button>
 </div>
 
 <div class="card">
-<button class="btn2" onclick="exportExcel()">⬇ Export Excel</button>
-<button class="btn3" onclick="kirimWA()">📲 Kirim WhatsApp</button>
+<div class="row">
+<button class="btn2" onclick="exportExcel()">Excel</button>
+<button class="btn3" onclick="kirimWA()">WhatsApp</button>
+</div>
 
 <table id="tbl"></table>
-<div class="totalBox" id="totalHari"></div>
+<h3 id="total"></h3>
 </div>
 
 <script>
 // ================= DATA RUTE =================
 
-const RUTE = {
-
+const RUTE={
 "SEBRANG 1":[
 "A088 – AMELIA BAKEKO","A095 – AMOR KIOS","A120 – AGORA TIMUR NUSANTARA",
 "A124 – AZIZAH KIOS","A129 – APRI KIOS SEBRANG","D029 – DILA KIOS",
@@ -165,182 +131,221 @@ const RUTE = {
 ],
 
 "PASAR 1":[
-"M077 MAMA PIPIN",
-"W024 WA ODE MUTIARA BU",
-"W034 WA ODE PASAR IKAN",
-"S149 SCANVENGER",
-"S110 SINAR ONING KIOS",
-"S106 SASA MAMA ( RIDHO )",
-"L018 LA ARIFIN PURNAMA ILAHI",
-"L012 LA AFI",
-"K052 WARUNG ES KASTIA",
-"I043 IKA BAPAK ( PENJUAL PLASTIK )",
-"H065 HARSUCI PESONA",
-"H073 HENDRA THUMBURUNI",
-"K051 KAYLA KIOS",
-"E015 EVI MAMA",
-"M110 MURNI KIOS (PASAR)",
-"A145 ARI THUMBURUNI",
-"S164 SINAR MANIS THUMBURUNI",
-"A141 ANDALAS TOKO",
-"C004 CAHAYA BARU",
-"C005 CAHAYA MUTIARA ( HARTATI )",
-"R016 ROS THUMBURUNI BU",
-"N016 NURSULITAMA RUKO/RASA SAYANG MM",
-"M056 MERIA MM",
-"R032 RIA JAYA",
-"W039 WARUNG NONA",
-"B058 BUNDA WARUNG RUKO",
-"C025 COTO MAKASSAR PASAR JALBAR",
-"I019 IRIAN THUMBURUNI",
-"I025 NASIR BU",
-"O006 OPAN BAPAK",
-"M111 MARDIAN"
+"M077 MAMA PIPIN","W024 WA ODE MUTIARA BU","W034 WA ODE PASAR IKAN",
+"S149 SCANVENGER","S110 SINAR ONING KIOS","S106 SASA MAMA ( RIDHO )",
+"L018 LA ARIFIN PURNAMA ILAHI","L012 LA AFI","K052 WARUNG ES KASTIA",
+"I043 IKA BAPAK ( PENJUAL PLASTIK )","H065 HARSUCI PESONA",
+"H073 HENDRA THUMBURUNI","K051 KAYLA KIOS","E015 EVI MAMA",
+"M110 MURNI KIOS (PASAR)","A145 ARI THUMBURUNI","S164 SINAR MANIS THUMBURUNI",
+"A141 ANDALAS TOKO","C004 CAHAYA BARU","C005 CAHAYA MUTIARA ( HARTATI )",
+"R016 ROS THUMBURUNI BU","N016 NURSULITAMA RUKO/RASA SAYANG MM",
+"M056 MERIA MM","R032 RIA JAYA","W039 WARUNG NONA","B058 BUNDA WARUNG RUKO",
+"C025 COTO MAKASSAR PASAR JALBAR","I019 IRIAN THUMBURUNI",
+"I025 NASIR BU","O006 OPAN BAPAK","M111 MARDIAN"
 ]
 };
 
-// ==============================================
+// =============== DATABASE LOCAL ===============
 
-let orders = JSON.parse(localStorage.getItem("orders")) || [];
-let activeDate = localStorage.getItem("activeDate");
-let activeRute = localStorage.getItem("activeRute") || "SEBRANG 1";
+let orders = JSON.parse(localStorage.getItem("orders"))||[];
+let visit  = JSON.parse(localStorage.getItem("visit"))||{};
 
-rute.value = activeRute;
+let activeRute = localStorage.getItem("rute")||"SEBRANG 1";
+let activeDate = localStorage.getItem("tgl")||"";
+
+rute.value=activeRute;
+tgl.value=activeDate;
+
+// =============== FUNGSI UTAMA =================
 
 function gantiRute(){
-activeRute = rute.value;
-localStorage.setItem("activeRute", activeRute);
-loadOutlet();
-render();
+activeRute=rute.value;
+localStorage.setItem("rute",activeRute);
+loadOutlet();render();
 }
 
 function mulaiHari(){
-if(!tgl.value) return alert("Pilih tanggal dulu");
-activeDate = tgl.value;
-localStorage.setItem("activeDate", activeDate);
-loadOutlet();
-render();
+activeDate=tgl.value;
+localStorage.setItem("tgl",activeDate);
+loadOutlet();render();
 }
 
 function akhiriHari(){
-orders = orders.filter(o =>
-!(o.tgl===activeDate && o.rute===activeRute)
+if(!confirm("Reset kunjungan rute ini?"))return;
+
+orders=orders.filter(o=>
+!(o.tgl==activeDate && o.rute==activeRute)
 );
-localStorage.setItem("orders",JSON.stringify(orders));
-render();
-loadOutlet();
+
+visit[activeDate+activeRute]={};
+
+simpan();loadOutlet();render();
 }
+
+// -------- KUNJUNGAN ----------
+
+function checkin(){
+const k=key();
+visit[k]=visit[k]||{};
+visit[k][outlet.value]={
+in:jam(),
+out:null
+};
+simpan();loadOutlet();render();
+}
+
+function checkout(){
+const k=key();
+if(visit[k]&&visit[k][outlet.value]){
+visit[k][outlet.value].out=jam();
+}
+simpan();loadOutlet();render();
+}
+
+// -------- ORDER ----------
+
+function tambah(){
+orders.push({
+tgl:activeDate,
+rute:activeRute,
+outlet:outlet.value,
+produk:produk.value,
+qty:+qty.value,
+harga:+harga.value,
+total:+qty.value*+harga.value
+});
+
+produk.value="";qty.value="";harga.value="";
+simpan();render();
+}
+
+// -------- RENDER ----------
 
 function loadOutlet(){
-outlet.innerHTML='<option value="">Pilih Outlet</option>';
+outlet.innerHTML="<option>Pilih Outlet</option>";
 
 RUTE[activeRute].forEach(o=>{
-const opt=document.createElement("option");
+let opt=document.createElement("option");
 opt.value=o;
-opt.textContent=o;
 
-const sudah=orders.some(x =>
-x.tgl===activeDate &&
-x.outlet===o &&
-x.rute===activeRute
-);
+let st=status(o);
+opt.textContent=o+(st?" ✓":"");
 
-if(sudah){
-opt.textContent+=" ✓";
-opt.classList.add("visited");
-}
+if(st)opt.className="visited";
 outlet.appendChild(opt);
 });
 
 updateProgress();
 }
 
-function tambah(){
-const o={
-tgl:activeDate,
-rute:activeRute,
-outlet:outlet.value,
-produk:produk.value,
-qty:+qty.value,
-harga:+harga.value
-};
-
-o.total=o.qty*o.harga;
-orders.push(o);
-
-localStorage.setItem("orders",JSON.stringify(orders));
-
-produk.value="";qty.value="";harga.value="";
-loadOutlet();
-render();
-}
-
 function render(){
-let total=0;
-let html=`<tr>
+let h=`<tr>
 <th>Outlet</th><th>Produk</th>
 <th>Qty</th><th>Total</th><th></th></tr>`;
 
-orders.filter(o=>
-o.tgl===activeDate &&
-o.rute===activeRute
-).forEach((o,i)=>{
-html+=`
-<tr>
-<td>${o.outlet}</td>
+let tot=0;
+
+orders
+.filter(o=>o.tgl==activeDate&&o.rute==activeRute)
+.forEach((o,i)=>{
+tot+=o.total;
+
+h+=`<tr>
+<td>${o.outlet}<br>${badge(o.outlet)}</td>
 <td>${o.produk}</td>
 <td>${o.qty}</td>
 <td>${o.total}</td>
-<td><button class="btnDel" onclick="hapus(${i})">X</button></td>
+<td><button class='btnDel' onclick='hapus(${i})'>X</button></td>
 </tr>`;
-total+=o.total;
 });
 
-tbl.innerHTML=html;
-totalHari.innerText="TOTAL : Rp "+total.toLocaleString("id-ID");
+tbl.innerHTML=h;
+total.innerText="TOTAL : Rp "+tot.toLocaleString("id-ID");
 
 updateProgress();
 }
 
 function updateProgress(){
-const dikunjungi=new Set(
-orders.filter(o=>
-o.tgl===activeDate &&
-o.rute===activeRute
-).map(o=>o.outlet)
+let s=RUTE[activeRute].length;
+
+let v=new Set(
+orders
+.filter(o=>o.tgl==activeDate&&o.rute==activeRute)
+.map(o=>o.outlet)
 ).size;
 
-const totalOutlet=RUTE[activeRute].length;
-progressText.innerText=`${dikunjungi} / ${totalOutlet} outlet`;
-bar.style.width=(dikunjungi/totalOutlet*100)+"%";
+progressText.innerText=
+`Progress ${activeRute} : ${v} / ${s} outlet`;
+
+bar.style.width=Math.round(v/s*100)+"%";
+}
+
+// -------- UTIL ----------
+
+function status(o){
+let k=key();
+return visit[k]&&visit[k][o];
+}
+
+function badge(o){
+let k=key();
+let d=visit[k]&&visit[k][o];
+if(!d)return "";
+
+if(d.out)
+return `<span class='badge done'>✔ ${d.in}-${d.out}</span>`;
+if(d.in)
+return `<span class='badge on'>⏱ ${d.in}</span>`;
+}
+
+function hapus(i){
+orders.splice(i,1);
+simpan();render();
+}
+
+function jam(){
+return new Date().toLocaleTimeString("id-ID",
+{hour:"2-digit",minute:"2-digit"});
+}
+
+function key(){
+return activeDate+activeRute;
+}
+
+function simpan(){
+localStorage.setItem("orders",JSON.stringify(orders));
+localStorage.setItem("visit",JSON.stringify(visit));
+}
+
+// -------- EXPORT ----------
+
+function exportExcel(){
+let csv="Rute,Tgl,Outlet,Produk,Qty,Harga,Total\n";
+orders.forEach(o=>{
+csv+=`${o.rute},${o.tgl},${o.outlet},${o.produk},${o.qty},${o.harga},${o.total}\n`;
+});
+download(csv,"laporan.csv");
 }
 
 function kirimWA(){
 let t=`*LAPORAN ${activeRute}*%0A%0A`;
-orders.filter(o=>o.tgl===activeDate && o.rute===activeRute)
+
+orders
+.filter(o=>o.tgl==activeDate&&o.rute==activeRute)
 .forEach(o=>{
 t+=`${o.outlet}%0A${o.produk} x${o.qty} = ${o.total}%0A%0A`;
 });
-window.open("https://wa.me/?text="+t);
+
+open("https://wa.me/?text="+t);
 }
 
-function exportExcel(){
-let csv="Rute,Tanggal,Outlet,Produk,Qty,Total\n";
-orders.forEach(o=>{
-csv+=`${o.rute},${o.tgl},${o.outlet},${o.produk},${o.qty},${o.total}\n`;
-});
+function download(t,n){
 let a=document.createElement("a");
-a.href=URL.createObjectURL(new Blob([csv]));
-a.download="laporan-multi-rute.csv";
-a.click();
+a.href=URL.createObjectURL(new Blob([t]));
+a.download=n;a.click();
 }
 
-if(activeDate){
-tgl.value=activeDate;
-loadOutlet();
-render();
-}
+loadOutlet();render();
 </script>
-
 </body>
 </html>
