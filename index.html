@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Sales Order – Rute Kunjungan</title>
+<title>Sales Order – Multi Rute</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -54,33 +54,13 @@ background:#2563eb;
 .btn3{background:#25D366}
 .btnDel{background:#ef4444;padding:6px 10px;font-size:12px}
 
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-font-size:13px;
+.visited{
+background:#dcfce7;
+color:#065f46;
+font-weight:600;
 }
 
-th,td{
-padding:8px;
-border-bottom:1px solid #eee;
-}
-
-th{background:#f1f5f9}
-
-.totalBox{
-background:#0f172a;
-color:white;
-padding:15px;
-border-radius:15px;
-margin-top:15px;
-text-align:center;
-font-size:18px;
-}
-
-.progressBox{
-margin-top:15px;
-}
+.progressBox{margin-top:15px}
 
 .bar{
 height:16px;
@@ -97,10 +77,26 @@ background:#22c55e;
 width:0%;
 }
 
-.visited{
-background:#dcfce7;
-color:#065f46;
-font-weight:600;
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+font-size:13px;
+}
+
+th,td{
+padding:8px;
+border-bottom:1px solid #eee;
+}
+
+.totalBox{
+background:#0f172a;
+color:white;
+padding:15px;
+border-radius:15px;
+margin-top:15px;
+text-align:center;
+font-size:18px;
 }
 </style>
 </head>
@@ -108,11 +104,16 @@ font-weight:600;
 <body>
 
 <header>
-<h2>📦 SALES ORDER RUTE</h2>
-<div>Monitoring Kunjungan Outlet</div>
+<h2>📦 SALES ORDER MULTI RUTE</h2>
+<div>SEBRANG 1 & PASAR 1</div>
 </header>
 
 <div class="card">
+<select id="rute" onchange="gantiRute()">
+<option value="SEBRANG 1">SEBRANG 1</option>
+<option value="PASAR 1">PASAR 1</option>
+</select>
+
 <input type="date" id="tgl">
 
 <button class="btn2" onclick="mulaiHari()">▶ Mulai Hari</button>
@@ -140,12 +141,15 @@ font-weight:600;
 <button class="btn3" onclick="kirimWA()">📲 Kirim WhatsApp</button>
 
 <table id="tbl"></table>
-
 <div class="totalBox" id="totalHari"></div>
 </div>
 
 <script>
-const outletList = [
+// ================= DATA RUTE =================
+
+const RUTE = {
+
+"SEBRANG 1":[
 "A088 – AMELIA BAKEKO","A095 – AMOR KIOS","A120 – AGORA TIMUR NUSANTARA",
 "A124 – AZIZAH KIOS","A129 – APRI KIOS SEBRANG","D029 – DILA KIOS",
 "D044 – DILLA KIOS PASIR PANJANG","E004 – EMMI TAN BU",
@@ -158,44 +162,87 @@ const outletList = [
 "S160 – SIMPANG TIGA KIOS","T002 – ANTO KIOS","Y014 – YULI BAKEKO",
 "F002 – FADJRIN","R024 – ROMAIKA KIOS","S037 – SOKIMIN SEBRANG",
 "D010 – DICKY SEBRANG","A111 – ALKA KIOS","B064 – BEACHES CAFE"
-];
+],
+
+"PASAR 1":[
+"M077 MAMA PIPIN",
+"W024 WA ODE MUTIARA BU",
+"W034 WA ODE PASAR IKAN",
+"S149 SCANVENGER",
+"S110 SINAR ONING KIOS",
+"S106 SASA MAMA ( RIDHO )",
+"L018 LA ARIFIN PURNAMA ILAHI",
+"L012 LA AFI",
+"K052 WARUNG ES KASTIA",
+"I043 IKA BAPAK ( PENJUAL PLASTIK )",
+"H065 HARSUCI PESONA",
+"H073 HENDRA THUMBURUNI",
+"K051 KAYLA KIOS",
+"E015 EVI MAMA",
+"M110 MURNI KIOS (PASAR)",
+"A145 ARI THUMBURUNI",
+"S164 SINAR MANIS THUMBURUNI",
+"A141 ANDALAS TOKO",
+"C004 CAHAYA BARU",
+"C005 CAHAYA MUTIARA ( HARTATI )",
+"R016 ROS THUMBURUNI BU",
+"N016 NURSULITAMA RUKO/RASA SAYANG MM",
+"M056 MERIA MM",
+"R032 RIA JAYA",
+"W039 WARUNG NONA",
+"B058 BUNDA WARUNG RUKO",
+"C025 COTO MAKASSAR PASAR JALBAR",
+"I019 IRIAN THUMBURUNI",
+"I025 NASIR BU",
+"O006 OPAN BAPAK",
+"M111 MARDIAN"
+]
+};
+
+// ==============================================
 
 let orders = JSON.parse(localStorage.getItem("orders")) || [];
 let activeDate = localStorage.getItem("activeDate");
+let activeRute = localStorage.getItem("activeRute") || "SEBRANG 1";
+
+rute.value = activeRute;
+
+function gantiRute(){
+activeRute = rute.value;
+localStorage.setItem("activeRute", activeRute);
+loadOutlet();
+render();
+}
 
 function mulaiHari(){
 if(!tgl.value) return alert("Pilih tanggal dulu");
 activeDate = tgl.value;
 localStorage.setItem("activeDate", activeDate);
-alert("Hari dimulai ✅");
 loadOutlet();
 render();
 }
 
 function akhiriHari(){
-if(!activeDate) return alert("Belum mulai hari");
-
-if(confirm("Akhiri hari dan reset kunjungan?")){
-orders = orders.filter(o => o.tgl !== activeDate);
-localStorage.setItem("orders", JSON.stringify(orders));
-localStorage.removeItem("activeDate");
-activeDate = null;
+orders = orders.filter(o =>
+!(o.tgl===activeDate && o.rute===activeRute)
+);
+localStorage.setItem("orders",JSON.stringify(orders));
 render();
 loadOutlet();
-alert("Hari selesai. Data reset ✅");
-}
 }
 
 function loadOutlet(){
 outlet.innerHTML='<option value="">Pilih Outlet</option>';
 
-outletList.forEach(o=>{
+RUTE[activeRute].forEach(o=>{
 const opt=document.createElement("option");
 opt.value=o;
 opt.textContent=o;
 
 const sudah=orders.some(x =>
-x.tgl===activeDate && x.outlet===o
+x.tgl===activeDate &&
+x.outlet===o &&
+x.rute===activeRute
 );
 
 if(sudah){
@@ -209,11 +256,9 @@ updateProgress();
 }
 
 function tambah(){
-if(!activeDate) return alert("Klik MULAI HARI dulu");
-if(!outlet.value) return alert("Pilih outlet");
-
 const o={
 tgl:activeDate,
+rute:activeRute,
 outlet:outlet.value,
 produk:produk.value,
 qty:+qty.value,
@@ -231,13 +276,15 @@ render();
 }
 
 function render(){
+let total=0;
 let html=`<tr>
 <th>Outlet</th><th>Produk</th>
 <th>Qty</th><th>Total</th><th></th></tr>`;
 
-let total=0;
-
-orders.filter(o=>o.tgl===activeDate).forEach((o,i)=>{
+orders.filter(o=>
+o.tgl===activeDate &&
+o.rute===activeRute
+).forEach((o,i)=>{
 html+=`
 <tr>
 <td>${o.outlet}</td>
@@ -250,50 +297,42 @@ total+=o.total;
 });
 
 tbl.innerHTML=html;
-totalHari.innerText="TOTAL HARI INI : Rp "+total.toLocaleString("id-ID");
+totalHari.innerText="TOTAL : Rp "+total.toLocaleString("id-ID");
 
 updateProgress();
 }
 
-function hapus(i){
-orders.splice(i,1);
-localStorage.setItem("orders",JSON.stringify(orders));
-render();
-loadOutlet();
-}
-
 function updateProgress(){
 const dikunjungi=new Set(
-orders.filter(o=>o.tgl===activeDate).map(o=>o.outlet)
+orders.filter(o=>
+o.tgl===activeDate &&
+o.rute===activeRute
+).map(o=>o.outlet)
 ).size;
 
-const totalOutlet=outletList.length;
-const persen=(dikunjungi/totalOutlet)*100;
-
+const totalOutlet=RUTE[activeRute].length;
 progressText.innerText=`${dikunjungi} / ${totalOutlet} outlet`;
-bar.style.width=persen+"%";
-}
-
-function exportExcel(){
-let csv="Tanggal,Outlet,Produk,Qty,Harga,Total\n";
-orders.forEach(o=>{
-csv+=`${o.tgl},${o.outlet},${o.produk},${o.qty},${o.harga},${o.total}\n`;
-});
-let a=document.createElement("a");
-a.href=URL.createObjectURL(new Blob([csv]));
-a.download="laporan-sales.csv";
-a.click();
+bar.style.width=(dikunjungi/totalOutlet*100)+"%";
 }
 
 function kirimWA(){
-let t="*LAPORAN SALES*%0A%0A";
-let total=0;
-orders.filter(o=>o.tgl===activeDate).forEach(o=>{
+let t=`*LAPORAN ${activeRute}*%0A%0A`;
+orders.filter(o=>o.tgl===activeDate && o.rute===activeRute)
+.forEach(o=>{
 t+=`${o.outlet}%0A${o.produk} x${o.qty} = ${o.total}%0A%0A`;
-total+=o.total;
 });
-t+=`TOTAL : ${total}`;
 window.open("https://wa.me/?text="+t);
+}
+
+function exportExcel(){
+let csv="Rute,Tanggal,Outlet,Produk,Qty,Total\n";
+orders.forEach(o=>{
+csv+=`${o.rute},${o.tgl},${o.outlet},${o.produk},${o.qty},${o.total}\n`;
+});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(new Blob([csv]));
+a.download="laporan-multi-rute.csv";
+a.click();
 }
 
 if(activeDate){
