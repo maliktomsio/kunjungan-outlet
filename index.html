@@ -261,6 +261,118 @@ document.getElementById("tgl").value =
  new Date().toISOString().substr(0,10);
 
 loadOutlet();
+  <!-- ===== FITUR TAMBAHAN (TANPA MENGUBAH KODE ASLI) ===== -->
+
+<div class="card">
+<h3>Progress Rute</h3>
+<div id="progressRute">0 / 0 Outlet</div>
+</div>
+
+<div class="card">
+<button class="btn" onclick="simpanOrder()">💾 Simpan Order Outlet</button>
+<button class="btn" onclick="kirimWA()">📲 Kirim Laporan WA</button>
+<button class="btn" onclick="exportExcel()">📁 Export Excel</button>
+</div>
+
+<script>
+// ===== DATABASE ORDER =====
+let db = JSON.parse(localStorage.getItem("DB_ORDER") || "{}");
+
+function simpanOrder(){
+
+let rute = document.getElementById("rute").value;
+let outlet = document.getElementById("outlet").value;
+let tgl = document.getElementById("tgl").value;
+
+if(!db[tgl]) db[tgl] = {};
+if(!db[tgl][rute]) db[tgl][rute] = {};
+
+db[tgl][rute][outlet] = {
+  total: document.getElementById("total").innerText,
+  jam: new Date().toLocaleTimeString()
+};
+
+localStorage.setItem("DB_ORDER", JSON.stringify(db));
+
+alert("Order tersimpan untuk outlet:\n" + outlet);
+
+hitungProgress();
+}
+
+// ===== PROGRESS RUTE =====
+function hitungProgress(){
+
+let rute = document.getElementById("rute").value;
+let tgl = document.getElementById("tgl").value;
+
+let totalOutlet = ruteDB[rute].length;
+
+let selesai = 0;
+
+if(db[tgl] && db[tgl][rute]){
+  selesai = Object.keys(db[tgl][rute]).length;
+}
+
+document.getElementById("progressRute").innerText =
+selesai + " / " + totalOutlet + " Outlet";
+}
+
+// ===== KIRIM WA =====
+function kirimWA(){
+
+let rute = document.getElementById("rute").value;
+let tgl = document.getElementById("tgl").value;
+
+if(!db[tgl] || !db[tgl][rute]){
+  return alert("Belum ada order tersimpan");
+}
+
+let teks = "*LAPORAN SALES*\n";
+teks += "Tanggal : " + tgl + "\n";
+teks += "Rute : " + rute + "\n\n";
+
+for(let outlet in db[tgl][rute]){
+ teks += "• " + outlet + "\n";
+ teks += "  Total : Rp " + db[tgl][rute][outlet].total + "\n";
+ teks += "  Jam : " + db[tgl][rute][outlet].jam + "\n\n";
+}
+
+window.open("https://wa.me/?text=" + encodeURIComponent(teks));
+}
+
+// ===== EXPORT EXCEL =====
+function exportExcel(){
+
+let csv = "Tanggal,Rute,Outlet,Total,Jam\n";
+
+for(let t in db){
+ for(let r in db[t]){
+  for(let o in db[t][r]){
+
+   csv +=
+   t + "," +
+   r + "," +
+   o + "," +
+   db[t][r][o].total + "," +
+   db[t][r][o].jam + "\n";
+
+  }
+ }
+}
+
+let a = document.createElement("a");
+a.href = URL.createObjectURL(new Blob([csv]));
+a.download = "laporan_sales.xlsx";
+a.click();
+}
+
+// auto update
+document.getElementById("rute").addEventListener("change", hitungProgress);
+document.getElementById("tgl").addEventListener("change", hitungProgress);
+
+setTimeout(hitungProgress, 500);
+
+</script>
 </script>
 
 </body>
