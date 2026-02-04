@@ -2,116 +2,138 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Sales App Pro</title>
+<title>Sales Order – Rute Kunjungan</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
+*{box-sizing:border-box}
 body{
-  font-family:system-ui;
-  margin:0;
-  background:#f1f5f9;
+font-family:-apple-system,BlinkMacSystemFont,Arial;
+margin:0;
+background:#f4f6f9;
 }
+
 header{
-  background:linear-gradient(135deg,#0f172a,#1e3a8a);
-  color:white;
-  padding:20px;
-  border-radius:0 0 20px 20px;
+background:linear-gradient(135deg,#0f172a,#1e3a8a);
+color:white;
+padding:25px;
+border-radius:0 0 25px 25px;
+text-align:center;
 }
+
 .card{
-  background:white;
-  margin:12px;
-  padding:14px;
-  border-radius:16px;
+background:white;
+margin:15px;
+padding:18px;
+border-radius:18px;
+box-shadow:0 10px 25px rgba(0,0,0,.06);
 }
-select,input,button{
-  width:100%;
-  padding:12px;
-  margin-top:6px;
-  border-radius:12px;
-  border:1px solid #ddd;
+
+input,select{
+width:100%;
+padding:12px;
+margin-top:6px;
+border-radius:12px;
+border:1px solid #ddd;
+font-size:15px;
 }
-button{background:#2563eb;color:white;border:none}
+
+button{
+width:100%;
+padding:14px;
+border-radius:14px;
+border:none;
+font-size:16px;
+margin-top:12px;
+color:white;
+background:#2563eb;
+}
+
 .btn2{background:#059669}
 .btn3{background:#25D366}
-.btnDel{background:#ef4444}
+.btnDel{background:#ef4444;padding:6px 10px;font-size:12px}
+.btnReset{background:#f59e0b}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+font-size:13px;
+}
+
+th,td{
+padding:8px;
+border-bottom:1px solid #eee;
+}
+
+th{background:#f1f5f9}
+
+.totalBox{
+background:#0f172a;
+color:white;
+padding:15px;
+border-radius:15px;
+margin-top:15px;
+text-align:center;
+font-size:18px;
+}
+
+.visited{
+background:#dcfce7;
+color:#065f46;
+font-weight:600;
+}
 
 .progress{
-  background:#e2e8f0;
-  border-radius:10px;
-  margin-top:10px;
+text-align:center;
+font-weight:bold;
+margin-top:8px;
 }
-.bar{
-  background:#2563eb;
-  height:10px;
-  border-radius:10px;
-}
-
-.visited{background:#dcfce7}
 </style>
 </head>
 
 <body>
 
 <header>
-<h3>📦 SALES APP PRO</h3>
-<div id="infoHari"></div>
+<h2>📦 SALES ORDER RUTE</h2>
+<div>Monitoring Kunjungan Outlet</div>
 </header>
 
 <div class="card">
-<label>Rute</label>
+
 <select id="rute" onchange="loadOutlet()">
-<option value="SEBRANG1">SEBRANG 1</option>
-<option value="PASAR1">PASAR 1</option>
+<option value="SEBRANG1">RUTE SEBRANG 1</option>
+<option value="PASAR1">RUTE PASAR 1</option>
 </select>
 
-<label>Tanggal</label>
 <input type="date" id="tgl">
 
-<label>Outlet</label>
+<div class="progress" id="progress"></div>
+
 <select id="outlet"></select>
 
-<label>Produk</label>
-<select id="produk" onchange="isiHarga()"></select>
-
+<input id="produk" placeholder="Nama Produk">
 <input id="qty" type="number" placeholder="Qty">
-
-<input id="harga" type="number" placeholder="Harga otomatis">
+<input id="harga" type="number" placeholder="Harga">
 
 <button onclick="tambah()">➕ Simpan Order</button>
+<button class="btnReset" onclick="resetHari()">🔁 Akhiri Hari (Reset)</button>
 
-<button class="btn2" onclick="mulaiHari()">🌞 Mulai Hari</button>
-<button class="btn3" onclick="akhiriHari()">🌙 Akhiri Hari</button>
-
-<div id="progressText"></div>
-<div class="progress"><div class="bar" id="bar"></div></div>
 </div>
 
 <div class="card">
 <button class="btn2" onclick="exportExcel()">⬇ Export Excel</button>
-<button class="btn3" onclick="kirimWA()">📲 Kirim WA</button>
+<button class="btn3" onclick="kirimWA()">📲 Kirim WhatsApp</button>
 
 <table id="tbl"></table>
 
-<div id="total"></div>
+<div class="totalBox" id="totalHari"></div>
 </div>
 
 <script>
-// ===== DAFTAR PRODUK DARI FILE KAMU =====
-const produkList = [
-{nama:"FIBE MINI 24 X 110ML", harga:5775},
-{nama:"ORONAMIN C DRINK BOTOL 24 X 120ML", harga:5250},
-{nama:"POCARI SWEAT CAN 24 X 330ML", harga:4850},
-{nama:"POCARI SWEAT ION WATER 24 X 350ML", harga:5250},
-{nama:"POCARI SWEAT ION WATER 24 X 500ML", harga:6250},
-{nama:"POCARI SWEAT PET 15 X 900ML", harga:10350},
-{nama:"POCARI SWEAT PET 24 X 350ML", harga:5250},
-{nama:"POCARI SWEAT PET 24 X 500ML", harga:6250},
-{nama:"SOYJOY CHOCOLATE ALMOND", harga:8025},
-{nama:"SOYJOY DANISH CHEESE", harga:8025}
-];
 
-// ===== RUTE OUTLET =====
-const ruteData = {
+const ruteDB = {
+
 SEBRANG1:[
 "A088 – AMELIA BAKEKO",
 "A095 – AMOR KIOS",
@@ -119,101 +141,153 @@ SEBRANG1:[
 "A124 – AZIZAH KIOS",
 "A129 – APRI KIOS SEBRANG",
 "D029 – DILA KIOS",
+"D044 – DILLA KIOS PASIR PANJANG",
+"E004 – EMMI TAN BU",
+"H040 – HENDRO KOLAM AIR BESAR",
+"I042 – IBU HASNI NASKUN",
+"J012 – JOKO MAS",
+"K018 – KODAR MAS",
+"K055 – KIOS IRMA",
+"M085 – MAULANA KIOS",
+"N003 – NANDO",
+"P032 – PUTRA SOLO",
+"R038 – RS MISI SEBRANG",
+"S050 – SUMBER REJEKI PASIR PANJANG",
+"S076 – SINAR MERAPI",
+"S091 – SINAR MUDA KIOS (EBA)",
+"S092 – KANTIN SMAN 2 (SLAMET)",
+"S111 – SABYAN KIOS",
+"S160 – SIMPANG TIGA KIOS",
+"T002 – ANTO KIOS",
+"Y014 – YULI BAKEKO",
+"F002 – FADJRIN",
+"R024 – ROMAIKA KIOS",
+"S037 – SOKIMIN SEBRANG",
+"D010 – DICKY SEBRANG",
+"A111 – ALKA KIOS",
 "B064 – BEACHES CAFE"
 ],
 
 PASAR1:[
-"M077 MAMA PIPIN",
-"W024 WA ODE MUTIARA BU",
-"W034 WA ODE PASAR IKAN",
-"S149 SCANVENGER",
-"S110 SINAR ONING KIOS",
-"L018 LA ARIFIN PURNAMA ILAHI",
-"K052 WARUNG ES KASTIA",
-"M111 MARDIAN"
+"M077 – MAMA PIPIN",
+"W024 – WA ODE MUTIARA BU",
+"W034 – WA ODE PASAR IKAN",
+"S149 – SCANVENGER",
+"S110 – SINAR ONING KIOS",
+"S106 – SASA MAMA (RIDHO)",
+"L018 – LA ARIFIN PURNAMA ILAHI",
+"L012 – LA AFI",
+"K052 – WARUNG ES KASTIA",
+"I043 – IKA BAPAK (PENJUAL PLASTIK)",
+"H065 – HARSUCI PESONA",
+"H073 – HENDRA THUMBURUNI",
+"K051 – KAYLA KIOS",
+"E015 – EVI MAMA",
+"M110 – MURNI KIOS (PASAR)",
+"A145 – ARI THUMBURUNI",
+"S164 – SINAR MANIS THUMBURUNI",
+"A141 – ANDALAS TOKO",
+"C004 – CAHAYA BARU",
+"C005 – CAHAYA MUTIARA (HARTATI)",
+"R016 – ROS THUMBURUNI BU",
+"N016 – NURSULITAMA RUKO/RASA SAYANG MM",
+"M056 – MERIA MM",
+"R032 – RIA JAYA",
+"W039 – WARUNG NONA",
+"B058 – BUNDA WARUNG RUKO",
+"C025 – COTO MAKASSAR PASAR JALBAR",
+"I019 – IRIAN THUMBURUNI",
+"I025 – NASIR BU",
+"O006 – OPAN BAPAK",
+"M111 – MARDIAN"
 ]
 };
 
-let orders = JSON.parse(localStorage.getItem("orders"))||[];
-let hariAktif = localStorage.getItem("hariAktif");
-
-function isiProduk(){
-produk.innerHTML="<option>Pilih Produk</option>";
-produkList.forEach(p=>{
-produk.innerHTML+=
-`<option value="${p.nama}|${p.harga}">
-${p.nama}</option>`;
-});
-}
-
-function isiHarga(){
-let v = produk.value.split("|");
-harga.value = v[1];
-}
+let orders = JSON.parse(localStorage.getItem("orders")) || [];
 
 function loadOutlet(){
-let r = rute.value;
-outlet.innerHTML="<option>Pilih Outlet</option>";
 
-ruteData[r].forEach(o=>{
-let s = orders.some(x=>x.tgl==tgl.value && x.outlet==o);
-outlet.innerHTML+=
-`<option class="${s?'visited':''}">
-${o}${s?' ✓':''}</option>`;
+const t = tgl.value;
+const r = rute.value;
+
+outlet.innerHTML='<option value="">Pilih Outlet</option>';
+
+let total = ruteDB[r].length;
+let sudah = 0;
+
+ruteDB[r].forEach(o=>{
+
+const opt=document.createElement("option");
+opt.value=o;
+opt.textContent=o;
+
+const ada = orders.some(x=>x.tgl===t && x.outlet===o);
+
+if(ada){
+opt.textContent+=" ✓ SUDAH";
+opt.classList.add("visited");
+sudah++;
+}
+
+outlet.appendChild(opt);
+
 });
 
-hitungProgress();
+progress.innerText = `Progress: ${sudah} / ${total} Outlet`;
 }
 
 function tambah(){
+
+if(!tgl.value || !outlet.value)
+return alert("Tanggal & outlet wajib diisi");
+
 orders.push({
 tgl:tgl.value,
 rute:rute.value,
 outlet:outlet.value,
-produk:produk.value.split("|")[0],
+produk:produk.value,
 qty:+qty.value,
 harga:+harga.value,
-total:+qty.value * +harga.value
+total:qty.value*harga.value
 });
 
 localStorage.setItem("orders",JSON.stringify(orders));
-render();
+
+produk.value="";
+qty.value="";
+harga.value="";
+
 loadOutlet();
-}
-
-function hitungProgress(){
-let r=rute.value;
-let total=ruteData[r].length;
-
-let done = orders.filter(o=>
-o.tgl==tgl.value && o.rute==r
-).length;
-
-progressText.innerText=`Progress: ${done} / ${total}`;
-
-bar.style.width=(done/total*100)+"%";
+render();
 }
 
 function render(){
-let h=`<tr>
-<th>Tgl</th><th>Outlet</th>
-<th>Produk</th><th>Total</th><th></th></tr>`;
 
-let tot=0;
+let html=`<tr>
+<th>Tgl</th><th>Rute</th><th>Outlet</th>
+<th>Produk</th><th>Qty</th><th>Total</th><th></th>
+</tr>`;
+
+let total=0;
 
 orders.forEach((o,i)=>{
-h+=`<tr>
+
+html+=`<tr>
 <td>${o.tgl}</td>
+<td>${o.rute}</td>
 <td>${o.outlet}</td>
 <td>${o.produk}</td>
+<td>${o.qty}</td>
 <td>${o.total}</td>
 <td><button class="btnDel" onclick="hapus(${i})">X</button></td>
 </tr>`;
-tot+=o.total;
+
+total+=o.total;
+
 });
 
-tbl.innerHTML=h;
-total.innerText="TOTAL Rp "+tot.toLocaleString();
+tbl.innerHTML=html;
+totalHari.innerText="TOTAL : Rp "+total.toLocaleString("id-ID");
 }
 
 function hapus(i){
@@ -223,14 +297,9 @@ render();
 loadOutlet();
 }
 
-function mulaiHari(){
-localStorage.setItem("hariAktif",tgl.value);
-infoHari.innerText="Hari Aktif: "+tgl.value;
-}
-
-function akhiriHari(){
-if(confirm("Reset untuk hari baru?")){
-orders=[];
+function resetHari(){
+if(confirm("Reset semua data hari ini?")){
+orders = [];
 localStorage.setItem("orders","[]");
 render();
 loadOutlet();
@@ -238,28 +307,37 @@ loadOutlet();
 }
 
 function exportExcel(){
-let csv="tgl,outlet,produk,qty,harga,total\n";
+let csv="Tanggal,Rute,Outlet,Produk,Qty,Harga,Total\n";
 orders.forEach(o=>{
-csv+=`${o.tgl},${o.outlet},${o.produk},${o.qty},${o.harga},${o.total}\n`;
+csv+=`${o.tgl},${o.rute},${o.outlet},${o.produk},${o.qty},${o.harga},${o.total}\n`;
 });
 
 let a=document.createElement("a");
 a.href=URL.createObjectURL(new Blob([csv]));
-a.download="sales.csv";
+a.download="laporan-sales.csv";
 a.click();
 }
 
 function kirimWA(){
-let t="*LAPORAN SALES*\n\n";
+
+let t="*LAPORAN SALES*%0A%0A";
+let total=0;
+
 orders.forEach(o=>{
-t+=`${o.outlet}\n${o.produk} x${o.qty} = ${o.total}\n\n`;
+t+=`${o.tgl} | ${o.rute}%0A${o.outlet}%0A${o.produk} x${o.qty} = ${o.total}%0A%0A`;
+total+=o.total;
 });
-window.open("https://wa.me/?text="+encodeURIComponent(t));
+
+t+=`TOTAL : ${total}`;
+
+window.open("https://wa.me/?text="+t);
 }
 
-isiProduk();
-render();
+tgl.addEventListener("change",loadOutlet);
+
 loadOutlet();
+render();
+
 </script>
 
 </body>
