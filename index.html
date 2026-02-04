@@ -548,5 +548,140 @@ updateProgress();
 });
 
 </script>
+  <!-- ===== FITUR IMPORT PRODUK DARI PDF TANPA UBAH KODE ASLI ===== -->
+
+<div class="app">
+<div class="card">
+<h3>📥 Import Produk dari PDF</h3>
+
+<input type="file" id="filePDF" accept="application/pdf">
+
+<button class="btn" onclick="importPDF()">
+  Proses PDF Jadi Produk
+</button>
+
+<div id="logPDF"></div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script>
+
+// ===== PARSER CERDAS PDF KE ARRAY PRODUK =====
+async function importPDF(){
+
+let file = document.getElementById("filePDF").files[0];
+
+if(!file){
+  alert("Pilih PDF dulu Malik");
+  return;
+}
+
+let reader = new FileReader();
+
+reader.onload = async function(){
+
+ let typed = new Uint8Array(this.result);
+
+ let pdf = await pdfjsLib.getDocument(typed).promise;
+
+ let teks = "";
+
+ for(let i=1;i<=pdf.numPages;i++){
+   let page = await pdf.getPage(i);
+   let txt = await page.getTextContent();
+
+   txt.items.forEach(t=>{
+     teks += t.str + "\n";
+   });
+ }
+
+ prosesTeksJadiProduk(teks);
+
+};
+
+reader.readAsArrayBuffer(file);
+
+}
+
+// ===== INTI MESIN PEMBACA POLA =====
+function prosesTeksJadiProduk(teks){
+
+let baris = teks.split("\n");
+
+let hasil = [];
+
+baris.forEach(b=>{
+
+// deteksi baris yg ada harga
+let pola =
+/(.+?)\s+([0-9]{3,}\.?[0-9]*)\s+([0-9]{3,}\.?[0-9]*)/;
+
+let m = b.match(pola);
+
+if(m){
+
+ let nama = m[1].trim();
+
+ let pcs = parseInt(m[2]
+      .replace(/\./g,"")
+      .replace(/,/g,""));
+
+ let krt = parseInt(m[3]
+      .replace(/\./g,"")
+      .replace(/,/g,""));
+
+ hasil.push({
+   nama:nama,
+   pcs:pcs,
+   krt:krt
+ });
+
+}
+
+});
+
+if(hasil.length==0){
+ alert("Tidak terbaca, tapi tenang bisa kita tuning");
+ return;
+}
+
+// 🔥 INJECT KE ARRAY PRODUK ASLI
+hasil.forEach(p=>{
+ produk.push(p);
+});
+
+// refresh dropdown produk
+refreshDropdownProduk();
+
+document.getElementById("logPDF").innerHTML =
+"✅ Terbaca: " + hasil.length + " produk";
+
+alert("Berhasil import " + hasil.length + " produk!");
+
+}
+
+// ===== REFRESH SELECT PRODUK =====
+function refreshDropdownProduk(){
+
+document.querySelectorAll(".row select:first-child")
+.forEach(sel=>{
+
+ let lama = sel.value;
+
+ sel.innerHTML =
+ `<option value="">-- pilih produk --</option>` +
+ produk.map((p,i)=>
+  `<option value="${i}">${p.nama}</option>`
+ ).join("");
+
+ sel.value = lama;
+
+});
+
+}
+
+</script>
 </body>
 </html>
