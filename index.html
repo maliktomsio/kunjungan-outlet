@@ -394,5 +394,159 @@ document.getElementById("tgl")
 setTimeout(updateProgress,500);
 
 </script>
+  <!-- ====== TAMBAHAN FITUR DETAIL ITEM + RESET HARIAN ====== -->
+
+<script>
+
+// ===== AMBIL DETAIL ITEM DARI FORM =====
+function ambilItemAktif(){
+
+let items = [];
+
+document.querySelectorAll(".row").forEach(r=>{
+
+ let p = r.children[0].value;
+ let satuan = r.children[1].value;
+ let qty = r.children[2].value;
+
+ if(p){
+   items.push({
+     nama : produk[p].nama,
+     satuan : satuan,
+     qty : qty,
+     harga : produk[p][satuan],
+     subtotal : produk[p][satuan] * qty
+   });
+ }
+
+});
+
+return items;
+}
+
+// ===== OVERRIDE SIMPAN PER OUTLET (DITAMBAH DETAIL) =====
+let simpanLama = simpanPerOutlet;
+
+simpanPerOutlet = function(){
+
+let tgl = document.getElementById("tgl").value;
+let rute = document.getElementById("rute").value;
+let outlet = document.getElementById("outlet").value;
+let total = document.getElementById("total").innerText;
+
+let items = ambilItemAktif();
+
+if(!DB[tgl]) DB[tgl] = {};
+if(!DB[tgl][rute]) DB[tgl][rute] = {};
+
+DB[tgl][rute][outlet] = {
+  total: total,
+  jam: new Date().toLocaleTimeString(),
+  items: items        // 🔥 simpan detail item
+};
+
+localStorage.setItem("SALES_DB", JSON.stringify(DB));
+
+alert("Tersimpan + detail item:\n" + outlet);
+
+updateProgress();
+}
+
+// ===== KIRIM WA DENGAN DETAIL ITEM =====
+let kirimWALama = kirimLaporanWA;
+
+kirimLaporanWA = function(){
+
+let tgl = document.getElementById("tgl").value;
+let rute = document.getElementById("rute").value;
+
+if(!DB[tgl] || !DB[tgl][rute]){
+  alert("Belum ada data tersimpan");
+  return;
+}
+
+let txt = "*LAPORAN SALES DETAIL*\n";
+txt += "Tanggal: " + tgl + "\n";
+txt += "Rute: " + rute + "\n\n";
+
+for(let o in DB[tgl][rute]){
+
+ txt += "▶ " + o + "\n";
+
+ let data = DB[tgl][rute][o];
+
+ data.items.forEach(i=>{
+   txt += "  - " + i.nama + "\n";
+   txt += "    " + i.qty + " " + i.satuan +
+          " x Rp " + format(i.harga) +
+          " = Rp " + format(i.subtotal) + "\n";
+ });
+
+ txt += "  TOTAL: Rp " + data.total + "\n";
+ txt += "  Jam: " + data.jam + "\n\n";
+}
+
+window.open(
+ "https://wa.me/?text=" +
+ encodeURIComponent(txt)
+);
+}
+
+// ===== EXPORT EXCEL DETAIL ITEM =====
+let exportLama = exportXLS;
+
+exportXLS = function(){
+
+let csv = "Tanggal,Rute,Outlet,Produk,Qty,Satuan,Harga,Subtotal,Total,Jam\n";
+
+for(let t in DB){
+ for(let r in DB[t]){
+  for(let o in DB[t][r]){
+
+   let data = DB[t][r][o];
+
+   data.items.forEach(i=>{
+
+     csv +=
+     t + "," +
+     r + "," +
+     o + "," +
+     i.nama + "," +
+     i.qty + "," +
+     i.satuan + "," +
+     i.harga + "," +
+     i.subtotal + "," +
+     data.total + "," +
+     data.jam + "\n";
+
+   });
+
+  }
+ }
+}
+
+let a = document.createElement("a");
+a.href = URL.createObjectURL(
+ new Blob([csv],{type:"text/csv"})
+);
+
+a.download = "laporan_detail_sales.xlsx";
+a.click();
+}
+
+// ===== RESET HARIAN OTOMATIS =====
+document.getElementById("tgl")
+.addEventListener("change", function(){
+
+// bersihkan form input item
+document.getElementById("list").innerHTML = "";
+document.getElementById("total").innerText = "0";
+
+// auto update progress
+updateProgress();
+
+});
+
+</script>
 </body>
 </html>
