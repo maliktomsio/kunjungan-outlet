@@ -683,5 +683,117 @@ document.querySelectorAll(".row select:first-child")
 }
 
 </script>
+  <!-- ===== FITUR IMPORT PRODUK DARI PDF ===== -->
+<div class="app">
+<div class="card">
+<h3>📦 Import Produk dari PDF</h3>
+
+<input type="file" id="pdfFile" accept="application/pdf">
+
+<button class="btn" onclick="bacaPDF()">
+📥 Baca PDF Produk
+</button>
+
+<div id="statusPDF"></div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+<script>
+
+// ===== BACA PDF OTOMATIS =====
+async function bacaPDF(){
+
+let file = document.getElementById("pdfFile").files[0];
+
+if(!file){
+  alert("Pilih file PDF dulu");
+  return;
+}
+
+document.getElementById("statusPDF").innerText =
+"⏳ Membaca PDF...";
+
+let reader = new FileReader();
+
+reader.onload = async function(){
+
+ let typedarray = new Uint8Array(this.result);
+
+ let pdf = await pdfjsLib.getDocument(typedarray).promise;
+
+ let textAll = "";
+
+ for(let i=1; i<=pdf.numPages; i++){
+   let page = await pdf.getPage(i);
+   let txt = await page.getTextContent();
+
+   txt.items.forEach(t=>{
+     textAll += t.str + "\n";
+   });
+ }
+
+ prosesTeksKeProduk(textAll);
+};
+
+reader.readAsArrayBuffer(file);
+
+}
+
+
+// ===== PARSING TEKS JADI PRODUK =====
+function prosesTeksKeProduk(teks){
+
+let baris = teks.split("\n");
+
+let hasil = [];
+
+baris.forEach(b=>{
+
+ // contoh baris:
+ // OREO VANILLA 147GR  pcs 9487  krt 227688
+
+ let angka = b.match(/\d+/g);
+
+ if(!angka || angka.length < 2) return;
+
+ let nama = b.replace(/\d+/g,"").trim();
+
+ let pcs = parseInt(angka[0]);
+ let krt = parseInt(angka[1]);
+
+ if(nama.length > 5){
+   hasil.push({
+     nama : nama,
+     pcs : pcs,
+     krt : krt
+   });
+ }
+
+});
+
+if(hasil.length == 0){
+ document.getElementById("statusPDF").innerText =
+ "❌ Format PDF belum cocok, tapi bisa kita tuning!";
+ return;
+}
+
+
+// ===== MASUKKAN KE APLIKASI =====
+produk.length = 0;
+
+hasil.forEach(p=>{
+ produk.push(p);
+});
+
+document.getElementById("statusPDF").innerText =
+"✅ Berhasil import " + hasil.length + " produk dari PDF";
+
+alert("Produk berhasil masuk ke aplikasi!");
+
+}
+
+</script>
 </body>
 </html>
