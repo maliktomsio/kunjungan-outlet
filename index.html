@@ -2,216 +2,265 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Sales Order Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales Order</title>
 
 <style>
 body{
-  font-family:system-ui;
-  background:#f4f6f9;
-  margin:0;
-}
-header{
-  background:linear-gradient(135deg,#0f172a,#1e3a8a);
+  background:#0e1621;
   color:white;
-  padding:20px;
-  text-align:center;
+  font-family:system-ui;
+}
+.app{
+  max-width:420px;
+  margin:auto;
+  padding:10px;
 }
 .card{
-  background:white;
-  margin:12px;
-  padding:14px;
-  border-radius:14px;
-}
-input,select{
-  width:100%;
+  background:#16202a;
   padding:10px;
+  border-radius:8px;
+  margin-bottom:10px;
+}
+select,input{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  background:#0e1621;
+  color:white;
+  border:1px solid #2a3;
+  border-radius:6px;
+}
+.row{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr;
+  gap:5px;
   margin-top:6px;
 }
-button{
-  width:100%;
-  padding:12px;
-  margin-top:8px;
+.btn{
+  background:#2a3;
   border:none;
-  border-radius:10px;
-  background:#2563eb;
-  color:white;
-}
-.btn2{background:#059669}
-.btn3{background:#25D366}
-table{
+  padding:8px;
   width:100%;
-  margin-top:10px;
-  font-size:13px;
-}
-.total{
-  background:#0f172a;
-  color:white;
-  padding:10px;
-  text-align:center;
+  border-radius:6px;
   margin-top:10px;
 }
 </style>
 </head>
 
 <body>
+<div class="app">
 
-<header>
-<h3>📦 SALES ORDER PRO</h3>
-</header>
+<h3>ORDER OUTLET</h3>
 
 <div class="card">
 
-<select id="produk" onchange="setHarga()">
-<option value="">Pilih Produk</option>
+<label>Pilih Rute</label>
+<select id="rute" onchange="loadOutlet()">
+<option value="SEBRANG1">SEBRANG 1</option>
+<option value="PASAR1">PASAR 1</option>
 </select>
 
-<select id="satuan" onchange="setHarga()">
-<option value="PCS">PCS</option>
-<option value="KRT">KARTON</option>
-</select>
+<label>Outlet</label>
+<select id="outlet"></select>
 
-<input id="qty" type="number" placeholder="Qty" oninput="hitung()">
-
-<input id="harga" placeholder="Harga otomatis" readonly>
-
-<input id="total" placeholder="Total" readonly>
-
-<button onclick="tambah()">➕ Tambah</button>
-
+<label>Tanggal</label>
+<input type="date" id="tgl">
 </div>
 
 <div class="card">
-<button class="btn2" onclick="exportExcel()">⬇ Excel</button>
-<button class="btn3" onclick="kirimWA()">📲 WA</button>
+<div id="list"></div>
+<button class="btn" onclick="tambah()">+ Tambah Produk</button>
+</div>
 
-<table id="tbl"></table>
+<div class="card">
+<h3>Total : Rp <span id="total">0</span></h3>
+</div>
 
-<div class="total" id="grand"></div>
 </div>
 
 <script>
-// ==========================
-// DATABASE PRODUK
-// harga 1 PCS & isi per karton
-// ==========================
-const produkDB = [
+// ===== DATA RUTE SESUAI GAMBAR KAMU =====
+const ruteDB = {
 
-{nama:"Mie Sedap Goreng", pcs:5250, isi:40},
-{nama:"Mie Sedap Soto", pcs:5200, isi:40},
-{nama:"Teh Pucuk 350ml", pcs:3200, isi:24},
-{nama:"Aqua 600ml", pcs:3000, isi:24},
-{nama:"Good Day", pcs:1800, isi:50},
-{nama:"Roma Kelapa", pcs:9500, isi:20},
-{nama:"Chiki Balls", pcs:2000, isi:60},
-{nama:"Kopi Kapal Api", pcs:1500, isi:100}
+SEBRANG1:[
+"A088 – AMELIA BAKEKO",
+"A095 – AMOR KIOS",
+"A120 – AGORA TIMUR NUSANTARA",
+"A124 – AZIZAH KIOS",
+"A129 – APRI KIOS SEBRANG",
+"D029 – DILA KIOS",
+"D044 – DILLA KIOS PASIR PANJANG",
+"E004 – EMMI TAN BU",
+"H040 – HENDRO KOLAM AIR BESAR",
+"I042 – IBU HASNI NASKUN",
+"J012 – JOKO MAS",
+"K018 – KODAR MAS",
+"K055 – KIOS IRMA",
+"M085 – MAULANA KIOS",
+"N003 – NANDO",
+"P032 – PUTRA SOLO",
+"R038 – RS MISI SEBRANG",
+"S050 – SUMBER REJEKI PASIR PANJANG",
+"S076 – SINAR MERAPI",
+"S091 – SINAR MUDA KIOS (EBA)",
+"S092 – KANTIN SMAN 2 (SLAMET)",
+"S111 – SABYAN KIOS",
+"S160 – SIMPANG TIGA KIOS",
+"T002 – ANTO KIOS",
+"Y014 – YULI BAKEKO",
+"F002 – FADJRIN",
+"R024 – ROMAIKA KIOS",
+"S037 – SOKIMIN SEBRANG",
+"D010 – DICKY SEBRANG",
+"A111 – ALKA KIOS",
+"B064 – BEACHES CAFE"
+],
+
+PASAR1:[
+"M077 – MAMA PIPIN",
+"W024 – WA ODE MUTIARA BU",
+"W034 – WA ODE PASAR IKAN",
+"S149 – SCANVENGER",
+"S110 – SINAR ONING KIOS",
+"S106 – SASA MAMA ( RIDHO )",
+"L018 – LA ARIFIN PURNAMA ILAHI",
+"L012 – LA AFI",
+"K052 – WARUNG ES KASTIA",
+"I043 – IKA BAPAK ( PENJUAL PLASTIK )",
+"H065 – HARSUCI PESONA",
+"H073 – HENDRA THUMBURUNI",
+"K051 – KAYLA KIOS",
+"E015 – EVI MAMA",
+"M110 – MURNI KIOS (PASAR)",
+"A145 – ARI THUMBURUNI",
+"S164 – SINAR MANIS THUMBURUNI",
+"A141 – ANDALAS TOKO",
+"C004 – CAHAYA BARU",
+"C005 – CAHAYA MUTIARA ( HARTATI )",
+"R016 – ROS THUMBURUNI BU",
+"N016 – NURSULITAMA RUKO/RASA SAYANG MM",
+"M056 – MERIA MM",
+"R032 – RIA JAYA",
+"W039 – WARUNG NONA",
+"B058 – BUNDA WARUNG RUKO",
+"C025 – COTO MAKASSAR PASAR JALBAR",
+"I019 – IRIAN THUMBURUNI",
+"I025 – NASIR BU",
+"O006 – OPAN BAPAK",
+"M111 – MARDIAN"
+]
+
+};
+// ===== END RUTE =====
+
+
+// ===== PRODUK DARI PDF (TIDAK DIUBAH) =====
+const produk = [
+{nama:"OREO CHOCO ACTIVATION 110,4GR", pcs:8414, krt:201936},
+{nama:"OREO CHOCO VANI WAFER 117GR", pcs:8356, krt:200544},
+{nama:"OREO DARK & WHITE CHOC 110,4GR", pcs:8792, krt:211008},
+{nama:"OREO DOUBLE CHOCO WAFER 117GR", pcs:8356, krt:200544},
+{nama:"OREO PEANUT BUTTER & CHOCO", pcs:8792, krt:211008},
+{nama:"OREO RED VELVET 110,4GR", pcs:9503, krt:228072},
+{nama:"OREO SPACEBURST CREAM", pcs:7578, krt:181872},
+{nama:"OREO STRAW CREAM", pcs:8414, krt:201936},
+{nama:"OREO VANILLA 147,2GR", pcs:9487, krt:227688},
+
+{nama:"POCARI SWEAT CAN 330ML", pcs:4850, krt:116400},
+{nama:"POCARI SWEAT PET 350ML", pcs:5250, krt:126000},
+{nama:"POCARI SWEAT PET 500ML", pcs:6250, krt:150000},
+{nama:"POCARI SWEAT 900ML", pcs:10350, krt:155250},
+
+{nama:"SOYJOY CHOCOLATE ALMOND", pcs:8025, krt:385200},
+{nama:"SOYJOY DANISH CHEESE", pcs:8025, krt:385200},
+{nama:"SOYJOY STRAWBERRY", pcs:8025, krt:385200},
+{nama:"SOYJOY TROPICAL", pcs:8025, krt:385200},
+
+{nama:"FRUITAMIN COCOBIT KELAPA", pcs:1062, krt:25488},
+{nama:"FRUITAMIN STRAWBERRY", pcs:1062, krt:25488},
+
+{nama:"M-150 BOTTLE", pcs:5020, krt:251000},
+{nama:"M-150 CAN SLIM", pcs:6542, krt:157008},
+
+{nama:"BISKUAT BITES CHOCOLATE", pcs:4840, krt:174240},
+{nama:"BISKUAT BITES VANILA", pcs:4840, krt:174240},
+{nama:"BISKUAT BOLU COKLAT", pcs:1951, krt:280944},
+{nama:"BISKUAT GOLDEN STRAWBERRY", pcs:1909, krt:274896},
+
+{nama:"KRAFT CHEDDAR LOAF 2KG", pcs:234451, krt:1875608},
+{nama:"KRAFT CHEDDAR MINI", pcs:4961, krt:714384},
+{nama:"KRAFT SINGLES 10S", pcs:22596, krt:677880},
+
+{nama:"CAP KAKI TIGA ANAK LYCHEE", pcs:5167, krt:124008},
+{nama:"CAP KAKI TIGA ANAK ORANGE", pcs:5167, krt:124008}
 
 ];
+// ====== END DATA ======
 
-let orders = JSON.parse(localStorage.getItem("orders")) || [];
 
-// load produk
-produkDB.forEach(p=>{
-  produk.innerHTML += `<option>${p.nama}</option>`;
+function loadOutlet(){
+let r = document.getElementById("rute").value;
+let sel = document.getElementById("outlet");
+
+sel.innerHTML="";
+
+ruteDB[r].forEach(o=>{
+ let op=document.createElement("option");
+ op.textContent=o;
+ sel.appendChild(op);
 });
-
-function setHarga(){
-
-const p = produkDB.find(x=>x.nama==produk.value);
-if(!p) return;
-
-let h = 0;
-
-if(satuan.value=="PCS"){
-  h = p.pcs;
-}else{
-  h = p.pcs * p.isi;
 }
 
-harga.value = h;
-hitung();
-}
-
-function hitung(){
-total.value = qty.value * harga.value;
+function format(x){
+ return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g,".");
 }
 
 function tambah(){
+let id = Date.now();
 
-if(!produk.value || !qty.value)
-return alert("Lengkapi dulu");
+let html = `
+<div class="row">
+<select onchange="hitung()">
+<option value="">-- pilih produk --</option>
+${produk.map((p,i)=>`
+<option value="${i}">${p.nama}</option>
+`).join("")}
+</select>
 
-orders.push({
-produk:produk.value,
-satuan:satuan.value,
-qty:+qty.value,
-harga:+harga.value,
-total:+total.value
-});
+<select onchange="hitung()">
+<option value="pcs">PCS</option>
+<option value="krt">KRT</option>
+</select>
 
-localStorage.setItem("orders",JSON.stringify(orders));
+<input type="number" value="1" min="1" onkeyup="hitung()" onchange="hitung()">
+</div>
+`;
 
-qty.value="";
-render();
+document.getElementById("list").insertAdjacentHTML("beforeend",html);
 }
 
-function render(){
+function hitung(){
+let total = 0;
 
-let html=`<tr>
-<th>Produk</th>
-<th>Satuan</th>
-<th>Qty</th>
-<th>Total</th>
-</tr>`;
+document.querySelectorAll(".row").forEach(r=>{
+ let p = r.children[0].value;
+ let satuan = r.children[1].value;
+ let qty = r.children[2].value;
 
-let g=0;
-
-orders.forEach(o=>{
-html+=`<tr>
-<td>${o.produk}</td>
-<td>${o.satuan}</td>
-<td>${o.qty}</td>
-<td>${o.total}</td>
-</tr>`;
-g+=o.total;
+ if(p){
+   let harga = produk[p][satuan];
+   total += harga * qty;
+ }
 });
 
-tbl.innerHTML=html;
-grand.innerText="TOTAL : Rp "+g.toLocaleString("id-ID");
+document.getElementById("total").innerText = format(total);
 }
 
-// EXPORT
-function exportExcel(){
+document.getElementById("tgl").value =
+ new Date().toISOString().substr(0,10);
 
-let csv="Produk,Satuan,Qty,Harga,Total\n";
-
-orders.forEach(o=>{
-csv+=`${o.produk},${o.satuan},${o.qty},${o.harga},${o.total}\n`;
-});
-
-let a=document.createElement("a");
-a.href=URL.createObjectURL(new Blob([csv]));
-a.download="sales.csv";
-a.click();
-}
-
-// WA
-function kirimWA(){
-
-let t="*ORDER*%0A%0A";
-let g=0;
-
-orders.forEach(o=>{
-t+=`${o.produk}%0A${o.qty} ${o.satuan} = ${o.total}%0A%0A`;
-g+=o.total;
-});
-
-t+="TOTAL : "+g;
-
-window.open("https://wa.me/?text="+t);
-}
-
-render();
+loadOutlet();
 </script>
 
 </body>
