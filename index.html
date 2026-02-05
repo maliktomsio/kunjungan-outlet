@@ -69,6 +69,12 @@ select,input{
 </div>
 
 <div class="card">
+  <input
+  type="text"
+  placeholder="🔍 Cari produk..."
+  onkeyup="filterProduk(this.value)"
+  style="margin-bottom:10px"
+/>
 <div id="list"></div>
 <button class="btn" onclick="tambah()">+ Tambah Produk</button>
 </div>
@@ -769,6 +775,49 @@ document.getElementById("total").innerText = "0";
 updateProgress();
 
 });
+
+</script>
+  <!-- ===== TAMBAHAN FITUR CARI PRODUK TANPA UBAH KODE ASLI ===== -->
+
+<script>
+
+// buat cache option asli
+let opsiProdukAsli = produk.map((p,i)=>({
+  index:i,
+  nama:p.nama
+}));
+
+// fungsi filter
+function filterProduk(keyword){
+
+ keyword = keyword.toLowerCase();
+
+ let hasil = opsiProdukAsli.filter(p =>
+   p.nama.toLowerCase().includes(keyword)
+ );
+
+ // update semua select produk yang sedang tampil
+ document.querySelectorAll(".row select:first-child")
+ .forEach(sel=>{
+
+   let valLama = sel.value;
+
+   sel.innerHTML = `
+   <option value="">-- pilih produk --</option>
+   ` + hasil.map(p=>`
+     <option value="${p.index}">
+       ${p.nama}
+     </option>
+   `).join("");
+
+   // kembalikan pilihan lama kalau masih ada
+   if(hasil.find(h=>h.index == valLama)){
+     sel.value = valLama;
+   }
+
+ });
+
+}
 
 </script>
 </body>
